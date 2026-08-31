@@ -182,6 +182,13 @@ button:disabled {
   gap: 12px;
 }
 
+.assistant-content {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  min-width: 0;
+}
+
 .assistant-avatar {
   display: grid;
   width: 48px;
@@ -275,6 +282,37 @@ button:disabled {
   padding-left: 1.2rem;
   color: #334155;
   line-height: 1.75;
+}
+
+.source-references {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: min(760px, 100%);
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.source-references span {
+  font-weight: 800;
+}
+
+.source-references a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 1px solid rgba(29, 78, 216, 0.2);
+  border-radius: 999px;
+  background: #eff6ff;
+  color: var(--accent-dark);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.source-references a:hover {
+  background: #dbeafe;
 }
 
 .loading-bubble {

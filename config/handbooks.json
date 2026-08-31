@@ -4,7 +4,33 @@
     "envPrefix": "SEIBU_SOGO",
     "title": "西部・そごう 販売基本ルールAI",
     "assistantLabel": "西部・そごう 販売基本ルールAI",
-    "inputPlaceholder": "販売基本ルールについて質問を入力",
-    "initialMessage": "西部・そごう 販売基本ルールAIです。確認したいことを入力してください。"
+    "inputPlaceholder": "販売基本ルールについて質問を入力してください",
+    "initialMessage": "西部・そごう 販売基本ルールAIです。確認したいことを入力してください。",
+    "source": {
+      "label": "販売基本ルール 抜粋PDF",
+      "pdfPath": "output/pdf/sales-basic-rules_pages-65-82_108-109.pdf",
+      "pageTags": [
+        { "tag": "page_65", "label": "p.65 金券・小切手の取扱い方", "sourcePage": 65, "pdfPage": 1 },
+        { "tag": "page_66", "label": "p.66 金券・小切手の券面例", "sourcePage": 66, "pdfPage": 2 },
+        { "tag": "page_67", "label": "p.67 お支払いの種類（金券） 自社発行券一覧", "sourcePage": 67, "pdfPage": 3 },
+        { "tag": "page_68", "label": "p.68 お支払いの種類（金券） 自社発行券・友の会券", "sourcePage": 68, "pdfPage": 4 },
+        { "tag": "page_69", "label": "p.69 お支払いの種類（金券） 他社発行券", "sourcePage": 69, "pdfPage": 5 },
+        { "tag": "page_70", "label": "p.70 お支払いの種類（金券） 売場指定ギフト券・食品ギフト券・特別お買物票", "sourcePage": 70, "pdfPage": 6 },
+        { "tag": "page_71", "label": "p.71 百貨店ギフトカードの取扱い方（一般売場）", "sourcePage": 71, "pdfPage": 7 },
+        { "tag": "page_72", "label": "p.72 百貨店ギフトカードの取扱い方（テナント売場）", "sourcePage": 72, "pdfPage": 8 },
+        { "tag": "page_73", "label": "p.73 バーコード決済について", "sourcePage": 73, "pdfPage": 9 },
+        { "tag": "page_74", "label": "p.74 クレジットカード販売の場合", "sourcePage": 74, "pdfPage": 10 },
+        { "tag": "page_75", "label": "p.75 クレジットカード取扱い時の留意点", "sourcePage": 75, "pdfPage": 11 },
+        { "tag": "page_76", "label": "p.76 お支払いの種類（クレジットカード） 自社カード", "sourcePage": 76, "pdfPage": 12 },
+        { "tag": "page_77", "label": "p.77 お支払いの種類（クレジットカード） 他社カード前半", "sourcePage": 77, "pdfPage": 13 },
+        { "tag": "page_78", "label": "p.78 お支払いの種類（クレジットカード） 他社カード後半", "sourcePage": 78, "pdfPage": 14 },
+        { "tag": "page_79", "label": "p.79 JCB/VISA/Master・デビットカード・プリペイドカード", "sourcePage": 79, "pdfPage": 15 },
+        { "tag": "page_80", "label": "p.80 セブン銀行発行「デビット付きキャッシュカード」", "sourcePage": 80, "pdfPage": 16 },
+        { "tag": "page_81", "label": "p.81 カード会社連絡先（主要カード会社）", "sourcePage": 81, "pdfPage": 17 },
+        { "tag": "page_82", "label": "p.82 カード会社連絡先（西武のみ・銀聯）", "sourcePage": 82, "pdfPage": 18 },
+        { "tag": "page_108", "label": "p.108 免税の知識", "sourcePage": 108, "pdfPage": 19 },
+        { "tag": "page_109", "label": "p.109 免税の手続き方法・免税対象商品と免税購入額", "sourcePage": 109, "pdfPage": 20 }
+      ]
+    }
   }
 ]

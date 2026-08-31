@@ -8,6 +8,20 @@ export type HandbookDefinition = {
   assistantLabel?: string;
   inputPlaceholder?: string;
   initialMessage?: string;
+  source?: HandbookSourceDefinition;
+};
+
+export type SourcePageTag = {
+  tag: string;
+  label: string;
+  sourcePage: number;
+  pdfPage: number;
+};
+
+export type HandbookSourceDefinition = {
+  label?: string;
+  pdfPath?: string;
+  pageTags?: SourcePageTag[];
 };
 
 export type BasicAuthCredential = {
@@ -38,12 +52,23 @@ export type HandbookApp = {
     apiKey: string;
   };
   auth: AuthConfig;
+  source?: {
+    label: string;
+    pdfPath?: string;
+    pageTags: SourcePageTag[];
+  };
 };
 
 export type PublicHandbookConfig = Pick<
   HandbookApp,
   "slug" | "title" | "assistantLabel" | "inputPlaceholder" | "initialMessage" | "connectionName"
->;
+> & {
+  source?: {
+    label: string;
+    pdfUrl?: string;
+    pageTags: SourcePageTag[];
+  };
+};
 
 export type HandbookRegistry = {
   apps: HandbookApp[];
@@ -55,6 +80,7 @@ export type HandbookRegistry = {
 
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const envPrefixPattern = /^[A-Z][A-Z0-9_]*$/;
+const pageTagPattern = /^page_[a-z0-9_]+$/;
 
 function isEnabled(value: string | undefined) {
   return ["1", "true", "yes", "on"].includes((value ?? "").trim().toLowerCase());
@@ -66,6 +92,58 @@ function asNonEmptyString(value: unknown, fieldName: string) {
   }
 
   return value.trim();
+}
+
+function asPositiveInteger(value: unknown, fieldName: string) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new Error(`${fieldName} must be a positive integer.`);
+  }
+
+  return value;
+}
+
+function parseSourceDefinition(value: unknown, fieldName: string): HandbookSourceDefinition | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${fieldName} must be an object.`);
+  }
+
+  const record = value as Record<string, unknown>;
+  const pageTagsValue = record.pageTags;
+  const pageTags = pageTagsValue === undefined ? [] : pageTagsValue;
+  if (!Array.isArray(pageTags)) {
+    throw new Error(`${fieldName}.pageTags must be an array.`);
+  }
+
+  const seenTags = new Set<string>();
+  return {
+    label: typeof record.label === "string" && record.label.trim() ? record.label.trim() : undefined,
+    pdfPath: typeof record.pdfPath === "string" && record.pdfPath.trim() ? record.pdfPath.trim() : undefined,
+    pageTags: pageTags.map((item, index) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) {
+        throw new Error(`${fieldName}.pageTags[${index}] must be an object.`);
+      }
+
+      const pageTagRecord = item as Record<string, unknown>;
+      const tag = asNonEmptyString(pageTagRecord.tag, `${fieldName}.pageTags[${index}].tag`);
+      if (!pageTagPattern.test(tag)) {
+        throw new Error(`${fieldName}.pageTags[${index}].tag must match ${pageTagPattern}.`);
+      }
+      if (seenTags.has(tag)) {
+        throw new Error(`${fieldName}.pageTags contains duplicate tag: ${tag}`);
+      }
+      seenTags.add(tag);
+
+      return {
+        tag,
+        label: asNonEmptyString(pageTagRecord.label, `${fieldName}.pageTags[${index}].label`),
+        sourcePage: asPositiveInteger(pageTagRecord.sourcePage, `${fieldName}.pageTags[${index}].sourcePage`),
+        pdfPage: asPositiveInteger(pageTagRecord.pdfPage, `${fieldName}.pageTags[${index}].pdfPage`),
+      };
+    }),
+  };
 }
 
 function parseDefinitions(raw: string, sourceName: string): HandbookDefinition[] {
@@ -105,6 +183,7 @@ function parseDefinitions(raw: string, sourceName: string): HandbookDefinition[]
       assistantLabel: typeof record.assistantLabel === "string" ? record.assistantLabel.trim() : undefined,
       inputPlaceholder: typeof record.inputPlaceholder === "string" ? record.inputPlaceholder.trim() : undefined,
       initialMessage: typeof record.initialMessage === "string" ? record.initialMessage.trim() : undefined,
+      source: parseSourceDefinition(record.source, `${sourceName}[${index}].source`),
     };
   });
 }
@@ -124,6 +203,23 @@ function resolveConfigPath() {
 
   if (!existingPath) {
     throw new Error(`Handbook configuration was not found. Checked: ${candidates.join(", ")}`);
+  }
+
+  return existingPath;
+}
+
+function resolveConfiguredFilePath(configuredPath: string, fieldName: string) {
+  const cwd = process.cwd();
+  const candidates = path.isAbsolute(configuredPath)
+    ? [path.resolve(configuredPath)]
+    : [
+      path.resolve(cwd, configuredPath),
+      path.resolve(cwd, "..", configuredPath),
+    ];
+  const existingPath = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isFile());
+
+  if (!existingPath) {
+    throw new Error(`${fieldName} was not found. Checked: ${candidates.join(", ")}`);
   }
 
   return existingPath;
@@ -244,6 +340,13 @@ export function buildHandbookRegistry(
     const baseUrl = requiredEnv(env, baseUrlEnvName, errors);
     const projectId = requiredEnv(env, `${prefix}_BRAIN_PROJECT_ID`, errors);
     const apiKey = requiredEnv(env, `${prefix}_BRAIN_API_KEY`, errors);
+    const source = definition.source ? {
+      label: definition.source.label || `${definition.title} source`,
+      pdfPath: definition.source.pdfPath
+        ? resolveConfiguredFilePath(definition.source.pdfPath, `${definition.slug}.source.pdfPath`)
+        : undefined,
+      pageTags: definition.source.pageTags ?? [],
+    } : undefined;
 
     return {
       slug: definition.slug,
@@ -258,6 +361,7 @@ export function buildHandbookRegistry(
         apiKey,
       },
       auth: buildAuthConfig(prefix, definition.title, env, errors),
+      source,
     };
   });
 
@@ -291,5 +395,10 @@ export function toPublicHandbookConfig(app: HandbookApp): PublicHandbookConfig {
     inputPlaceholder: app.inputPlaceholder,
     initialMessage: app.initialMessage,
     connectionName: app.connectionName,
+    source: app.source ? {
+      label: app.source.label,
+      pdfUrl: app.source.pdfPath ? `/api/handbooks/${app.slug}/source.pdf` : undefined,
+      pageTags: app.source.pageTags,
+    } : undefined,
   };
 }

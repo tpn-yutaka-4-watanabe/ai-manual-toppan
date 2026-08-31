@@ -16,7 +16,7 @@ ai-manual-toppan
   -> 高度な編集
 ```
 
-[azure-app-settings.example.json](./azure-app-settings.example.json) の内容を貼り付け、`<...>` を実値へ置き換えてください。
+[azure-app-settings.sample.json](./azure-app-settings.sample.json) の内容を貼り付け、`<...>` を実値へ置き換えてください。
 
 管理画面 `/admin` 用:
 

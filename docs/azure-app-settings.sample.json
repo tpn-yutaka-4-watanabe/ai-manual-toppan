@@ -1,0 +1,72 @@
+[
+  {
+    "name": "NODE_ENV",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_USERNAME",
+    "value": "<admin-username>",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_PASSWORD",
+    "value": "<admin-strong-password>",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_REALM",
+    "value": "Sales Basic Rules AI Admin",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_TITLE",
+    "value": "販売基本ルールAI 管理",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_BASE_URL",
+    "value": "https://uat.brain.metaclone.jp",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_PROJECT_ID",
+    "value": "<Brain Project ID>",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_API_KEY",
+    "value": "<Brain API Key>",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_CONNECTION_NAME",
+    "value": "西部・そごう 販売基本ルールAI Brain",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_USERNAME",
+    "value": "<chat-username>",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_PASSWORD",
+    "value": "<chat-strong-password>",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_REALM",
+    "value": "西部・そごう 販売基本ルールAI",
+    "slotSetting": false
+  },
+  {
+    "name": "HANDBOOK_INDEX_ENABLED",
+    "value": "false",
+    "slotSetting": false
+  },
+  {
+    "name": "BRAIN_REQUEST_TIMEOUT_MS",
+    "value": "180000",
+    "slotSetting": false
+  }
+]

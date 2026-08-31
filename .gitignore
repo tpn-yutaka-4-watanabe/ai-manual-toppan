@@ -7,6 +7,14 @@ coverage/
 .env
 .env.*
 !.env.example
+tmp/
+*.pdf
+!output/
+!output/pdf/
+!output/pdf/*.pdf
+!tests/
+!tests/fixtures/
+!tests/fixtures/*.pdf
 
 .DS_Store
 Thumbs.db

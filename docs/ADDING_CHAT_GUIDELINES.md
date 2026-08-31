@@ -1,22 +1,29 @@
 # チャット追加ガイドライン
 
-新しいチャットを追加するときは、既存チャットの定義と環境変数を変更せず、新しい `slug` と `envPrefix` を追加します。
+このアプリは、1つのAzure App Service上で複数の販売手帳AIを別URL・別認証で提供する構成です。新しいチャットを追加するときは、既存チャットの `slug`、`envPrefix`、環境変数、資料ファイルを変更しないでください。
 
-## 原則
+## 基本方針
 
-- 既存の `slug` は変更しない
-- 既存の `envPrefix` は変更しない
-- 既存チャットの BrainAPI 環境変数は変更しない
-- 共有コードは、追加だけで済む場合は変更しない
-- Gitに Project ID、API Key、Basic認証パスワードを保存しない
+- 既存チャットの `slug` は変更しない。
+- 既存チャットの `envPrefix` は変更しない。
+- 既存チャット用のBrainAPI環境変数は変更しない。
+- 追加するチャットだけに、新しい `slug` と `envPrefix` を割り当てる。
+- GitにBrainAPIキー、Project ID、Basic認証パスワード、Azure発行プロファイルを保存しない。
+- PDF根拠表示を使う場合は、該当チャットの `source` だけを追加・変更する。
 
 ## 追加時に変更する場所
 
-通常はこの2か所だけです。
+通常は次の2か所です。
 
 ```text
 config/handbooks.json
 Azure App Service の環境変数
+```
+
+PDF根拠表示を使う場合は、配信用のPDFもリポジトリに含めます。
+
+```text
+output/pdf/任意の抜粋PDF.pdf
 ```
 
 ## 1. config/handbooks.json に追加する
@@ -29,8 +36,15 @@ Azure App Service の環境変数
   "envPrefix": "NEW_SALES_RULES",
   "title": "新チャット 販売基本ルールAI",
   "assistantLabel": "新チャット 販売基本ルールAI",
-  "inputPlaceholder": "販売基本ルールについて質問を入力",
-  "initialMessage": "新チャット 販売基本ルールAIです。確認したいことを入力してください。"
+  "inputPlaceholder": "販売基本ルールについて質問を入力してください",
+  "initialMessage": "新チャット 販売基本ルールAIです。確認したいことを入力してください。",
+  "source": {
+    "label": "販売基本ルール 抜粋PDF",
+    "pdfPath": "output/pdf/example.pdf",
+    "pageTags": [
+      { "tag": "page_1", "label": "p.1 参照ページ名", "sourcePage": 1, "pdfPage": 1 }
+    ]
+  }
 }
 ```
 
@@ -64,40 +78,53 @@ NEW_SALES_RULES_AUTH_PASSWORD
 NEW_SALES_RULES_AUTH_REALM
 ```
 
-複数ユーザーにしたい場合は、`NEW_SALES_RULES_AUTH_USERNAME` / `NEW_SALES_RULES_AUTH_PASSWORD` の代わりに次を使います。
+複数ユーザーにしたい場合は、`NEW_SALES_RULES_AUTH_USERNAME` / `NEW_SALES_RULES_AUTH_PASSWORD` の代わりに次を使えます。
 
 ```text
 NEW_SALES_RULES_AUTH_USERS_JSON=[{"username":"user1","password":"password1"},{"username":"user2","password":"password2"}]
 ```
 
-## 3. 確認すること
+## 3. PDF根拠表示を使う場合
 
-追加後は以下を確認します。
+LLMの回答末尾に `[page_65]` のようなタグを出力させると、チャット画面側で根拠ページボタンに変換されます。ユーザーがボタンを押すと、該当チャットの認証付きPDFが別タブで開きます。
 
-- `/admin` に新チャットが表示される
-- 新チャットのURLが専用ユーザーで開ける
-- 新チャットのユーザーでは既存チャットを開けない
-- 既存チャットのユーザーでは新チャットを開けない
-- 既存チャットで質問して、以前どおり回答が返る
+`config/handbooks.json` の `source.pageTags` には次を入れます。
+
+- `tag`: LLMが回答末尾に出すタグ。例: `page_65`
+- `label`: 画面に表示する根拠ページ名。例: `p.65 金券・小切手の取扱い方`
+- `sourcePage`: 元PDF上のページ番号。
+- `pdfPage`: 配信用に抜粋したPDF内のページ番号。
+
+RAGに投入するMarkdownや疑似JSONにも、該当する `参照ページタグ` を持たせてください。LLMがページを特定できない場合、UIは根拠ページを表示できません。
+
+## 4. 確認すること
+
+追加後は次を確認します。
+
+- `/admin` に新チャットが表示される。
+- 新チャットのURLが専用ユーザーで開ける。
+- 新チャットのユーザーでは既存チャットを開けない。
+- 既存チャットのユーザーでは新チャットを開けない。
+- 新チャットで質問して、BrainAPIから回答が返る。
+- 回答末尾に `[page_XX]` が出る質問で、根拠ページボタンが表示される。
+- 根拠ページボタンを押すと、該当PDFページが開く。
 
 ## 避けること
 
-`config/handbooks.json` の既存項目をコピーするとき、`slug` と `envPrefix` の変更漏れが一番危険です。
+`config/handbooks.json` の既存項目をコピーするときは、`slug` と `envPrefix` の変更漏れが一番危険です。重複したまま動かすと起動時に失敗します。これは意図した安全策で、別チャットのBrainAPIや認証情報を誤って使うことを避けるためです。
 
-特に `envPrefix` が重複すると起動時に失敗します。これは意図した安全策です。重複したまま動かして、別チャットのBrainAPIや認証情報を誤って使うことを避けるためです。
+## 作業前後のチェック
 
-## 変更前チェック
-
-作業前に以下を控えておくと戻しやすくなります。
+作業前:
 
 ```powershell
 git status --short
 git diff -- config/handbooks.json
 ```
 
-作業後は以下を実行します。
+作業後:
 
 ```powershell
 npm test
-git diff -- config/handbooks.json docs/azure-app-settings.example.json
+git diff -- config/handbooks.json
 ```

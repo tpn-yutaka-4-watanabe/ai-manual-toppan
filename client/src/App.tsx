@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { fetchAdminHandbookIndex, fetchHandbookConfig, streamChat } from "./api";
-import type { AdminHandbookIndex, ChatMessage, PublicHandbookConfig } from "./types";
+import type { AdminHandbookIndex, ChatMessage, PublicHandbookConfig, SourcePageTag } from "./types";
 
 function getSlug() {
   const match = window.location.pathname.match(/^\/(?:chats|apps)\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
@@ -26,6 +26,52 @@ function mergeText(current: string, incoming: string) {
   if (!incoming) return current;
   if (!current || incoming.startsWith(current)) return incoming;
   return `${current}${incoming}`;
+}
+
+type SourceReference = SourcePageTag & {
+  href: string;
+};
+
+function extractSourceReferences(text: string, source: PublicHandbookConfig["source"]) {
+  if (!source?.pdfUrl || !source.pageTags.length) {
+    return { body: text, references: [] as SourceReference[] };
+  }
+
+  const pageTags = new Map(source.pageTags.map((item) => [item.tag, item]));
+  const references: SourceReference[] = [];
+  const seen = new Set<string>();
+  const body = text.replace(/\s*\[(page_[a-z0-9_]+)\]/g, (match, tag: string) => {
+    const pageTag = pageTags.get(tag);
+    if (!pageTag) return match;
+    if (!seen.has(tag)) {
+      seen.add(tag);
+      references.push({
+        ...pageTag,
+        href: `${source.pdfUrl}#page=${pageTag.pdfPage}`,
+      });
+    }
+    return "";
+  }).trim();
+
+  return {
+    body: body || text,
+    references,
+  };
+}
+
+function SourceReferences({ references, sourceLabel }: { references: SourceReference[]; sourceLabel: string }) {
+  if (!references.length) return null;
+
+  return (
+    <div className="source-references" aria-label="根拠ページ">
+      <span>{sourceLabel}</span>
+      {references.map((reference) => (
+        <a href={reference.href} target="_blank" rel="noreferrer" key={reference.tag}>
+          {reference.label}
+        </a>
+      ))}
+    </div>
+  );
 }
 
 function renderInline(text: string): ReactNode[] {
@@ -103,16 +149,24 @@ function MarkdownText({ text }: { text: string }) {
   );
 }
 
-function MessageItem({ message, label }: { message: ChatMessage; label: string }) {
+function MessageItem({ message, label, source }: { message: ChatMessage; label: string; source?: PublicHandbookConfig["source"] }) {
   if (message.role === "user") {
     return <div className="message-row user-row"><div className="user-bubble">{message.text}</div></div>;
   }
+  const rendered = extractSourceReferences(message.text, source);
   return (
     <div className="message-row assistant-row">
       <div className="assistant-label">{label}</div>
       <div className="assistant-speech-row">
         <div className="assistant-avatar" aria-hidden="true">AI</div>
-        {message.isLoading ? <div className="loading-bubble"><span /><span /><span /></div> : <MarkdownText text={message.text} />}
+        {message.isLoading ? (
+          <div className="loading-bubble"><span /><span /><span /></div>
+        ) : (
+          <div className="assistant-content">
+            <MarkdownText text={rendered.body} />
+            <SourceReferences references={rendered.references} sourceLabel={source?.label ?? "参照PDF"} />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -240,7 +294,9 @@ function HandbookPage({ slug }: { slug: string }) {
         </div>
       </header>
       <div className="chat-history" aria-live="polite">
-        {messages.map((message) => <MessageItem message={message} label={config.assistantLabel} key={message.id} />)}
+        {messages.map((message) => (
+          <MessageItem message={message} label={config.assistantLabel} source={config.source} key={message.id} />
+        ))}
         <div ref={bottomRef} />
       </div>
       <footer className="composer">

@@ -8,7 +8,18 @@ const { buildHandbookRegistry, toPublicHandbookConfig } = handbooksModule;
 const { createApp } = appModule;
 
 const definitions = [
-  { slug: "alpha-handbook", envPrefix: "ALPHA", title: "Alpha販売手帳AI" },
+  {
+    slug: "alpha-handbook",
+    envPrefix: "ALPHA",
+    title: "Alpha販売手帳AI",
+    source: {
+      label: "Alpha source PDF",
+      pdfPath: "tests/fixtures/source.pdf",
+      pageTags: [
+        { tag: "page_1", label: "p.1 Alpha source", sourcePage: 1, pdfPage: 1 },
+      ],
+    },
+  },
   { slug: "beta-handbook", envPrefix: "BETA", title: "Beta販売手帳AI" },
 ];
 
@@ -72,6 +83,9 @@ test("public configuration never includes Brain or authentication secrets", () =
   assert.equal(json.includes("alpha-password"), false);
   assert.equal(json.includes("alpha-project"), false);
   assert.equal(json.includes("admin-password"), false);
+  assert.equal(json.includes("tests/fixtures/source.pdf"), false);
+  assert.match(json, /"pdfUrl":"\/api\/handbooks\/alpha-handbook\/source\.pdf"/);
+  assert.match(json, /"tag":"page_1"/);
 });
 
 test("admin and handbook URLs enforce separate credentials", async () => {
@@ -123,7 +137,28 @@ test("admin and handbook URLs enforce separate credentials", async () => {
       headers: { Authorization: basic("alpha-user", "alpha-password") },
     });
     assert.equal(config.status, 200);
-    assert.equal((await config.json()).title, "Alpha販売手帳AI");
+    const publicConfig = await config.json();
+    assert.equal(publicConfig.title, "Alpha販売手帳AI");
+    assert.equal(publicConfig.source.label, "Alpha source PDF");
+    assert.equal(publicConfig.source.pdfUrl, "/api/handbooks/alpha-handbook/source.pdf");
+    assert.deepEqual(publicConfig.source.pageTags, [
+      { tag: "page_1", label: "p.1 Alpha source", sourcePage: 1, pdfPage: 1 },
+    ]);
+
+    const anonymousSource = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source.pdf`, { redirect: "manual" });
+    assert.equal(anonymousSource.status, 401);
+
+    const sourceWithAdminUser = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source.pdf`, {
+      headers: { Authorization: basic("admin-user", "admin-password") },
+    });
+    assert.equal(sourceWithAdminUser.status, 401);
+
+    const sourcePdf = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source.pdf`, {
+      headers: { Authorization: basic("alpha-user", "alpha-password") },
+    });
+    assert.equal(sourcePdf.status, 200);
+    assert.match(sourcePdf.headers.get("content-type") ?? "", /application\/pdf/);
+    assert.equal(Buffer.from(await sourcePdf.arrayBuffer()).toString("utf-8", 0, 8), "%PDF-1.1");
   } finally {
     await running.close();
   }

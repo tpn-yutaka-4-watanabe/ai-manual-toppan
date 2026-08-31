@@ -1,3 +1,10 @@
+export type SourcePageTag = {
+  tag: string;
+  label: string;
+  sourcePage: number;
+  pdfPage: number;
+};
+
 export type PublicHandbookConfig = {
   slug: string;
   title: string;
@@ -5,6 +12,11 @@ export type PublicHandbookConfig = {
   inputPlaceholder: string;
   initialMessage: string;
   connectionName: string;
+  source?: {
+    label: string;
+    pdfUrl?: string;
+    pageTags: SourcePageTag[];
+  };
 };
 
 export type ChatMessage = {

@@ -109,6 +109,21 @@ export function createHandbooksRouter(registry: HandbookRegistry) {
     res.json(registry.indexEnabled ? registry.listPublic() : []);
   });
 
+  router.get("/:slug/source.pdf", authorize, (req, res, next) => {
+    const app = registry.get(routeSlug(req.params.slug))!;
+    if (!app.source?.pdfPath) {
+      res.status(404).type("text/plain").send("Source PDF is not configured for this handbook.");
+      return;
+    }
+
+    res.setHeader("Cache-Control", "private, no-store");
+    res.setHeader("Content-Disposition", `inline; filename="${app.slug}-source.pdf"`);
+    res.type("application/pdf");
+    res.sendFile(app.source.pdfPath, (error) => {
+      if (error) next(error);
+    });
+  });
+
   router.get("/:slug", authorize, (req, res) => {
     const app = registry.get(routeSlug(req.params.slug))!;
     res.json(toPublicHandbookConfig(app));
