@@ -2,7 +2,7 @@ import express from "express";
 import fs from "node:fs";
 import path from "node:path";
 import type { HandbookRegistry } from "./config/handbooks";
-import { requireHandbookAuth } from "./services/basicAuth";
+import { requireAdminAuth, requireHandbookAuth } from "./services/basicAuth";
 import { createHandbooksRouter } from "./routes/handbooks";
 
 function resolveClientDistPath() {
@@ -42,6 +42,14 @@ export function createApp(registry: HandbookRegistry) {
 
   app.use("/api/handbooks", createHandbooksRouter(registry));
 
+  const authorizeAdmin = requireAdminAuth(registry);
+  app.get("/api/admin/handbooks", authorizeAdmin, (_req, res) => {
+    res.json({
+      title: registry.admin.title,
+      apps: registry.listPublic(),
+    });
+  });
+
   const clientDistPath = resolveClientDistPath();
   if (clientDistPath) {
     app.use("/assets", express.static(path.join(clientDistPath, "assets"), {
@@ -50,14 +58,17 @@ export function createApp(registry: HandbookRegistry) {
     }));
 
     const authorize = requireHandbookAuth(registry);
-    app.get("/apps/:slug", authorize, (_req, res) => {
+    app.get(["/chats/:slug", "/apps/:slug"], authorize, (_req, res) => {
+      res.sendFile(path.join(clientDistPath, "index.html"));
+    });
+    app.get("/admin", authorizeAdmin, (_req, res) => {
       res.sendFile(path.join(clientDistPath, "index.html"));
     });
     app.get("/", (_req, res) => {
-      res.sendFile(path.join(clientDistPath, "index.html"));
+      res.redirect(302, "/admin");
     });
   } else {
-    app.get(["/", "/apps/:slug"], (_req, res) => {
+    app.get(["/", "/admin", "/chats/:slug", "/apps/:slug"], (_req, res) => {
       res.status(503).type("text/plain").send("Client build not found. Run npm run build.");
     });
   }
@@ -73,4 +84,3 @@ export function createApp(registry: HandbookRegistry) {
 
   return app;
 }
-

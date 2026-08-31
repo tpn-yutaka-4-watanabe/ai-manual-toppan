@@ -1,139 +1,129 @@
 # Azure App Service 設定手順
 
-対象は、添付画面の Linux App Service `ai-manual-toppan`（Node.js 24 LTS）です。GitHubとAzure Portalの操作は以下の順序で行います。
+対象の App Service は `ai-manual-toppan` です。添付画像の構成どおり、Linux / Node.js 24 LTS を前提にしています。
 
-## 1. GitHubへ初回push
+このプロジェクトでは Deployment Center を使わず、リポジトリ内の GitHub Actions workflow からデプロイします。
 
-このフォルダで次を実行します。GitHub上のリポジトリは作成済みで空なので、`main` をそのまま初回pushできます。
+## 1. Azure の環境変数を設定する
+
+Azure Portal で次へ進みます。
+
+```text
+ai-manual-toppan
+  -> 設定
+  -> 環境変数
+  -> アプリ設定
+  -> 高度な編集
+```
+
+[azure-app-settings.example.json](./azure-app-settings.example.json) の内容を貼り付け、`<...>` を実値へ置き換えてください。
+
+管理画面 `/admin` 用:
+
+```text
+ADMIN_AUTH_USERNAME
+ADMIN_AUTH_PASSWORD
+ADMIN_AUTH_REALM
+ADMIN_TITLE
+```
+
+チャット画面 `/chats/seibu-sogo-sales-basic-rules` 用:
+
+```text
+SEIBU_SOGO_BRAIN_BASE_URL
+SEIBU_SOGO_BRAIN_PROJECT_ID
+SEIBU_SOGO_BRAIN_API_KEY
+SEIBU_SOGO_BRAIN_CONNECTION_NAME
+SEIBU_SOGO_AUTH_USERNAME
+SEIBU_SOGO_AUTH_PASSWORD
+SEIBU_SOGO_AUTH_REALM
+```
+
+保存時は、高度な編集画面の `OK` だけでなく、環境変数画面側の `適用` も押してください。
+
+## 2. App Service のランタイムを確認する
+
+Azure Portal で次を確認します。
+
+```text
+ランタイムスタック: Node
+メジャーバージョン: 24 LTS
+スタートアップコマンド: 空欄、または npm start
+```
+
+このリポジトリはルートの `package.json` に `start` を定義しているため、通常は空欄でも動きます。明示する場合は `npm start` です。
+
+`SCM_DO_BUILD_DURING_DEPLOYMENT` は設定しません。GitHub Actions 側でビルド済みの状態にしてから App Service へ配置します。
+
+## 3. GitHub に発行プロファイルを登録する
+
+Azure Portal で App Service `ai-manual-toppan` を開き、上部の `発行プロファイルのダウンロード` から `.PublishSettings` ファイルを取得します。
+
+次に GitHub リポジトリで以下へ進みます。
+
+```text
+Settings
+  -> Secrets and variables
+  -> Actions
+  -> New repository secret
+```
+
+登録内容:
+
+```text
+Name:
+AZURE_WEBAPP_PUBLISH_PROFILE
+
+Secret:
+ダウンロードした .PublishSettings ファイルの中身全体
+```
+
+この secret は GitHub Actions の `azure/webapps-deploy@v3` が App Service へデプロイするために使います。
+
+発行プロファイルが組織ポリシーで使えない場合は、OIDC + managed identity 方式に切り替えます。その場合は GitHub 側に `AZURE_CLIENT_ID`、`AZURE_TENANT_ID`、`AZURE_SUBSCRIPTION_ID` を置き、workflowを `azure/login` 方式へ変更します。
+
+## 4. GitHub へ push する
+
+このフォルダで実行します。
 
 ```powershell
 git add .
-git commit -m "Implement multi-tenant sales handbook AI"
+git commit -m "Build generic sales rules AI portal"
 git push -u origin main
 ```
 
-APIキーやパスワードを含む `.env.local` は `.gitignore` 対象です。Gitへ追加しないでください。
+push 後、GitHub の `Actions` タブで `Deploy Azure App Service` が走ります。
 
-## 2. 環境変数を高度な編集で設定
+## 5. デプロイ後に確認する
 
-Azure Portalで次へ進みます。
-
-1. `ai-manual-toppan`
-2. `設定` → `環境変数`
-3. `アプリ設定` → `高度な編集`
-4. [azure-app-settings.example.json](./azure-app-settings.example.json) のJSONを貼り付ける
-5. `<...>` の3か所以上（Project ID、API Key、ユーザー名、パスワード）を実値へ置き換える
-6. `OK` → `適用`
-
-設定を適用するとApp Serviceが再起動します。`PORT` はApp Serviceが自動で渡すため追加しません。
-
-### 既定のそごう西武パターンで必要な値
-
-| 環境変数 | 用途 |
-| --- | --- |
-| `SOGO_SEIBU_BRAIN_BASE_URL` | BrainAPIのベースURL |
-| `SOGO_SEIBU_BRAIN_PROJECT_ID` | Brain Project ID |
-| `SOGO_SEIBU_BRAIN_API_KEY` | Brain API Key（秘密） |
-| `SOGO_SEIBU_BRAIN_CONNECTION_NAME` | 画面に表示する接続名（任意） |
-| `SOGO_SEIBU_AUTH_USERNAME` | このURL専用のBasic認証ユーザー名 |
-| `SOGO_SEIBU_AUTH_PASSWORD` | このURL専用のBasic認証パスワード（秘密） |
-| `SOGO_SEIBU_AUTH_REALM` | ブラウザの認証ダイアログ名（任意、ASCII文字を推奨） |
-
-複数ユーザーを許可する場合は、`SOGO_SEIBU_AUTH_USERNAME` と `SOGO_SEIBU_AUTH_PASSWORD` の代わりに次を1つ設定できます。
+ヘルスチェック:
 
 ```text
-SOGO_SEIBU_AUTH_USERS_JSON=[{"username":"user1","password":"password1"},{"username":"user2","password":"password2"}]
+https://ai-manual-toppan-gcc7eqfth2fbg8hb.japaneast-01.azurewebsites.net/api/health
 ```
 
-## 3. GitHub連携を設定
+管理画面:
 
-Azure Portalで次へ進みます。
-
-1. `デプロイ` → `デプロイ センター`
-2. ソースに `GitHub` を選択
-3. 組織 `tpn-yutaka-4-watanabe`
-4. リポジトリ `ai-manual-toppan`
-5. ブランチ `main`
-6. 認証方式は、選択できる場合は `ユーザー割り当てマネージドID` を選択
-7. `保存`
-
-Deployment Centerが `.github/workflows/` にワークフローを作成し、push時にビルドとデプロイを行います。ワークフロー内で `npm install` と `npm run build` が実行され、デプロイ対象に `client/dist`、`server/dist`、実行用 `node_modules` が含まれることを確認してください。この構成ではGitHub Actions側でビルドするため、`SCM_DO_BUILD_DURING_DEPLOYMENT` は設定しません。
-
-App Serviceの `設定` → `構成` → `スタック設定` では次を確認します。
-
-- スタック: Node
-- メジャーバージョン: 24 LTS
-- スタートアップコマンド: 空欄、または `npm start`
-
-ルート `package.json` に `start` スクリプトがあるため、通常は空欄で動作します。
-
-## 4. デプロイ後の確認
-
-1. `https://<App Serviceの既定ドメイン>/api/health` が `200` と `"ok": true` を返す
-2. `https://<App Serviceの既定ドメイン>/apps/sogo-seibu-sales-handbook` を開く
-3. 認証ダイアログで `SOGO_SEIBU_AUTH_USERNAME` / `SOGO_SEIBU_AUTH_PASSWORD` を入力する
-4. 質問を送信し、BrainAPIの回答がストリーミング表示される
-5. 不正な資格情報では `401` になる
-
-必要に応じて `監視` → `正常性チェック` のパスへ `/api/health` を設定できます。このエンドポイントだけはBasic認証なしで稼働状態を返します。
-
-起動しない場合は `監視` → `ログ ストリーム` を開きます。必須環境変数が不足している場合、アプリは意図的に起動せず、不足した変数名をログへ表示します。秘密の値自体は表示しません。
-
-## 5. 販売手帳パターンを追加
-
-例として、URL `/apps/toppan-sales-handbook` を追加します。
-
-### Git側
-
-`config/handbooks.json` の配列に追加します。
-
-```json
-{
-  "slug": "toppan-sales-handbook",
-  "envPrefix": "TOPPAN",
-  "title": "TOPPAN販売手帳AI",
-  "assistantLabel": "TOPPAN販売手帳AI",
-  "inputPlaceholder": "販売手帳について質問を入力",
-  "initialMessage": "TOPPAN販売手帳AIです。確認したいことを入力してください。"
-}
+```text
+https://ai-manual-toppan-gcc7eqfth2fbg8hb.japaneast-01.azurewebsites.net/admin
 ```
 
-### Azure側
+チャット画面:
 
-高度な編集で、同じ接頭辞の設定を追加します。
-
-```json
-{
-  "name": "TOPPAN_BRAIN_BASE_URL",
-  "value": "https://uat.brain.metaclone.jp",
-  "slotSetting": false
-},
-{
-  "name": "TOPPAN_BRAIN_PROJECT_ID",
-  "value": "<このパターンのProject ID>",
-  "slotSetting": false
-},
-{
-  "name": "TOPPAN_BRAIN_API_KEY",
-  "value": "<このパターンのAPI Key>",
-  "slotSetting": false
-},
-{
-  "name": "TOPPAN_AUTH_USERNAME",
-  "value": "<このパターンのユーザー名>",
-  "slotSetting": false
-},
-{
-  "name": "TOPPAN_AUTH_PASSWORD",
-  "value": "<このパターンのパスワード>",
-  "slotSetting": false
-}
+```text
+https://ai-manual-toppan-gcc7eqfth2fbg8hb.japaneast-01.azurewebsites.net/chats/seibu-sogo-sales-basic-rules
 ```
 
-`envPrefix` が環境変数名の接頭辞です。パターンごとに別の接頭辞を使うことで、BrainAPI接続と認証情報を完全に分離します。
+確認ポイント:
 
-## 6. Gitを変更せず定義一覧を差し替える方法（任意）
+- `/admin` は `ADMIN_AUTH_USERNAME` / `ADMIN_AUTH_PASSWORD` で開ける
+- `/chats/seibu-sogo-sales-basic-rules` は `SEIBU_SOGO_AUTH_USERNAME` / `SEIBU_SOGO_AUTH_PASSWORD` で開ける
+- 管理画面の認証情報ではチャット画面を開けない
+- チャット画面の認証情報では管理画面を開けない
+- チャットで質問すると BrainAPI の回答が表示される
 
-`HANDBOOK_APPS_JSON` を設定すると、`config/handbooks.json` の代わりにそのJSON配列を読み込みます。秘密情報は含めず、`slug`、`envPrefix`、画面文言だけを入れてください。BrainAPIと認証の値は引き続き接頭辞付きの別環境変数へ設定します。
+## 6. 参考
 
-トップページに設定済みアプリのリンクを表示したい場合だけ、`HANDBOOK_INDEX_ENABLED=true` にします。既定値は一覧を公開しない `false` です。
+- Azure App Service の GitHub Actions デプロイ: https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions
+- Node.js App Service の設定: https://learn.microsoft.com/en-us/azure/app-service/configure-language-nodejs
+- App Service のアプリ設定と高度な編集: https://learn.microsoft.com/en-us/azure/app-service/configure-common

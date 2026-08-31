@@ -23,3 +23,7 @@ export type StreamPayload = {
   };
 };
 
+export type AdminHandbookIndex = {
+  title: string;
+  apps: PublicHandbookConfig[];
+};

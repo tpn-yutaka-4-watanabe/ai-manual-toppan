@@ -14,6 +14,10 @@ const definitions = [
 
 function environment(overrides = {}) {
   return {
+    ADMIN_AUTH_USERNAME: "admin-user",
+    ADMIN_AUTH_PASSWORD: "admin-password",
+    ADMIN_AUTH_REALM: "Admin",
+    ADMIN_TITLE: "販売基本ルールAI 管理",
     ALPHA_BRAIN_BASE_URL: "http://127.0.0.1:9",
     ALPHA_BRAIN_PROJECT_ID: "alpha-project",
     ALPHA_BRAIN_API_KEY: "alpha-api-secret",
@@ -52,33 +56,68 @@ test("configuration fails closed when a required secret is missing", () => {
   );
 });
 
+test("admin authentication also fails closed when it is incomplete", () => {
+  const env = environment();
+  delete env.ADMIN_AUTH_PASSWORD;
+  assert.throws(
+    () => buildHandbookRegistry(definitions, env),
+    /ADMIN_AUTH_PASSWORD/,
+  );
+});
+
 test("public configuration never includes Brain or authentication secrets", () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const json = JSON.stringify(toPublicHandbookConfig(registry.get("alpha-handbook")));
   assert.equal(json.includes("alpha-api-secret"), false);
   assert.equal(json.includes("alpha-password"), false);
   assert.equal(json.includes("alpha-project"), false);
+  assert.equal(json.includes("admin-password"), false);
 });
 
-test("each handbook URL and API enforce their own credentials", async () => {
+test("admin and handbook URLs enforce separate credentials", async () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const running = await listen(createApp(registry));
 
   try {
-    const anonymous = await fetch(`${running.baseUrl}/apps/alpha-handbook`, { redirect: "manual" });
-    assert.equal(anonymous.status, 401, await anonymous.text());
-    assert.match(anonymous.headers.get("www-authenticate") ?? "", /alpha-handbook/);
+    const anonymousAdmin = await fetch(`${running.baseUrl}/admin`, { redirect: "manual" });
+    assert.equal(anonymousAdmin.status, 401, await anonymousAdmin.text());
+    assert.match(anonymousAdmin.headers.get("www-authenticate") ?? "", /admin/);
+
+    const adminWithChatUser = await fetch(`${running.baseUrl}/api/admin/handbooks`, {
+      headers: { Authorization: basic("alpha-user", "alpha-password") },
+    });
+    assert.equal(adminWithChatUser.status, 401);
+
+    const adminIndex = await fetch(`${running.baseUrl}/api/admin/handbooks`, {
+      headers: { Authorization: basic("admin-user", "admin-password") },
+    });
+    assert.equal(adminIndex.status, 200);
+    assert.deepEqual((await adminIndex.json()).apps.map((item) => item.slug), ["alpha-handbook", "beta-handbook"]);
+
+    const anonymousChat = await fetch(`${running.baseUrl}/chats/alpha-handbook`, { redirect: "manual" });
+    assert.equal(anonymousChat.status, 401, await anonymousChat.text());
+    assert.match(anonymousChat.headers.get("www-authenticate") ?? "", /alpha-handbook/);
+
+    const chatWithAdminUser = await fetch(`${running.baseUrl}/chats/alpha-handbook`, {
+      headers: { Authorization: basic("admin-user", "admin-password") },
+    });
+    assert.equal(chatWithAdminUser.status, 401);
 
     const wrongApp = await fetch(`${running.baseUrl}/apps/beta-handbook`, {
       headers: { Authorization: basic("alpha-user", "alpha-password") },
     });
     assert.equal(wrongApp.status, 401);
 
-    const page = await fetch(`${running.baseUrl}/apps/alpha-handbook`, {
+    const page = await fetch(`${running.baseUrl}/chats/alpha-handbook`, {
       headers: { Authorization: basic("alpha-user", "alpha-password") },
     });
     assert.equal(page.status, 200);
     assert.match(page.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+
+    const legacyPage = await fetch(`${running.baseUrl}/apps/alpha-handbook`, {
+      headers: { Authorization: basic("alpha-user", "alpha-password") },
+    });
+    assert.equal(legacyPage.status, 200);
 
     const config = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook`, {
       headers: { Authorization: basic("alpha-user", "alpha-password") },

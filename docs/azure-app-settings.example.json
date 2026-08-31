@@ -5,8 +5,23 @@
     "slotSetting": false
   },
   {
-    "name": "HANDBOOK_INDEX_ENABLED",
-    "value": "false",
+    "name": "ADMIN_TITLE",
+    "value": "販売基本ルールAI 管理",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_USERNAME",
+    "value": "seibu-sogo",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_PASSWORD",
+    "value": "seibu-sogo-202609",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_REALM",
+    "value": "Sales Basic Rules AI Admin",
     "slotSetting": false
   },
   {
@@ -15,38 +30,43 @@
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_BRAIN_BASE_URL",
+    "name": "HANDBOOK_INDEX_ENABLED",
+    "value": "false",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_BASE_URL",
     "value": "https://uat.brain.metaclone.jp",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_BRAIN_PROJECT_ID",
-    "value": "<Brain Project IDを入力>",
+    "name": "SEIBU_SOGO_BRAIN_PROJECT_ID",
+    "value": "aa83424c-6a8f-49a4-b6ba-cd048cf8dc13",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_BRAIN_API_KEY",
-    "value": "<Brain API Keyを入力>",
+    "name": "SEIBU_SOGO_BRAIN_API_KEY",
+    "value": "22yjlbLW2oA1OQ+tZ2Br7fndV/68uBSqZ52a/XT9hcc=",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_BRAIN_CONNECTION_NAME",
-    "value": "そごう西武販売手帳AI Brain",
+    "name": "SEIBU_SOGO_BRAIN_CONNECTION_NAME",
+    "value": "西部・そごう 販売基本ルールAI Brain",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_AUTH_USERNAME",
-    "value": "<専用ユーザー名を入力>",
+    "name": "SEIBU_SOGO_AUTH_USERNAME",
+    "value": "<チャット画面ユーザー名>",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_AUTH_PASSWORD",
-    "value": "<十分に長い専用パスワードを入力>",
+    "name": "SEIBU_SOGO_AUTH_PASSWORD",
+    "value": "<チャット画面パスワード>",
     "slotSetting": false
   },
   {
-    "name": "SOGO_SEIBU_AUTH_REALM",
-    "value": "Sogo Seibu Sales Handbook AI",
+    "name": "SEIBU_SOGO_AUTH_REALM",
+    "value": "Seibu Sogo Sales Basic Rules AI",
     "slotSetting": false
   }
 ]

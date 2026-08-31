@@ -2,7 +2,7 @@
   "name": "ai-manual-toppan",
   "private": true,
   "version": "1.0.0",
-  "description": "複数の販売手帳AIをURL別・認証別に提供するAzure App Serviceアプリ",
+  "description": "複数の販売基本ルールAIをURL別・認証別に提供するAzure App Serviceアプリ",
   "workspaces": [
     "client",
     "server"

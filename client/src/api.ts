@@ -1,4 +1,4 @@
-import type { PublicHandbookConfig, StreamPayload } from "./types";
+import type { AdminHandbookIndex, PublicHandbookConfig, StreamPayload } from "./types";
 
 type StreamHandlers = {
   onConnection: (name: string) => void;
@@ -68,6 +68,17 @@ export async function fetchHandbookIndex() {
   return (await response.json()) as PublicHandbookConfig[];
 }
 
+export async function fetchAdminHandbookIndex() {
+  const response = await fetch("/api/admin/handbooks", {
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(await readError(response));
+  }
+  return (await response.json()) as AdminHandbookIndex;
+}
+
 export async function streamChat(
   slug: string,
   input: { utterance: string; uid: string; state?: unknown },
@@ -124,4 +135,3 @@ export async function streamChat(
     handleChunk(buffer);
   }
 }
-

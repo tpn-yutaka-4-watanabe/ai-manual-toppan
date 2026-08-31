@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
-import { fetchHandbookConfig, fetchHandbookIndex, streamChat } from "./api";
-import type { ChatMessage, PublicHandbookConfig } from "./types";
+import { fetchAdminHandbookIndex, fetchHandbookConfig, streamChat } from "./api";
+import type { AdminHandbookIndex, ChatMessage, PublicHandbookConfig } from "./types";
 
 function getSlug() {
-  const match = window.location.pathname.match(/^\/apps\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
+  const match = window.location.pathname.match(/^\/(?:chats|apps)\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
   return match?.[1] ?? "";
+}
+
+function isAdminPath() {
+  return /^\/(?:admin)?\/?$/.test(window.location.pathname);
 }
 
 function messageId(role: ChatMessage["role"]) {
@@ -229,7 +233,7 @@ function HandbookPage({ slug }: { slug: string }) {
   return (
     <main className="chat-shell">
       <header className="chat-header">
-        <div className="title-block"><a href="/">Apps</a><h1>{config.title}</h1></div>
+        <div className="title-block"><a href="/admin">管理</a><h1>{config.title}</h1></div>
         <div className="header-actions">
           <span className="connection-pill">{connectionName || "接続準備中"}</span>
           <button className="secondary-button" type="button" onClick={restart} disabled={sending}>最初から</button>
@@ -255,26 +259,39 @@ function HandbookPage({ slug }: { slug: string }) {
   );
 }
 
-function IndexPage() {
-  const [apps, setApps] = useState<PublicHandbookConfig[] | null>(null);
+function AdminPage() {
+  const [index, setIndex] = useState<AdminHandbookIndex | null>(null);
   const [error, setError] = useState("");
   useEffect(() => {
-    fetchHandbookIndex().then(setApps).catch((reason: unknown) => {
+    document.title = "販売基本ルールAI 管理";
+    fetchAdminHandbookIndex().then((value) => {
+      document.title = value.title;
+      setIndex(value);
+    }).catch((reason: unknown) => {
       setError(reason instanceof Error ? reason.message : "一覧を読み込めませんでした。");
     });
   }, []);
 
   return (
-    <main className="index-page">
-      <section className="index-card">
-        <p className="eyebrow">AI MANUAL</p>
-        <h1>販売手帳AI</h1>
-        <p className="index-description">各販売手帳AIの専用URLへアクセスしてください。</p>
+    <main className="admin-page">
+      <section className="admin-panel">
+        <div className="admin-heading">
+          <p className="eyebrow">ADMIN</p>
+          <h1>{index?.title ?? "販売基本ルールAI 管理"}</h1>
+        </div>
         {error ? <p className="error-message">{error}</p> : null}
-        {apps?.length ? (
-          <nav className="app-list" aria-label="販売手帳AI一覧">
-            {apps.map((app) => <a href={`/apps/${app.slug}`} key={app.slug}>{app.title}<span>開く</span></a>)}
+        {index?.apps.length ? (
+          <nav className="chat-list" aria-label="チャット一覧">
+            {index.apps.map((app) => (
+              <a href={`/chats/${app.slug}`} key={app.slug}>
+                <span className="chat-list-title">{app.title}</span>
+                <span className="chat-list-url">/chats/{app.slug}</span>
+                <span className="chat-list-action">開く</span>
+              </a>
+            ))}
           </nav>
+        ) : !error ? (
+          <p className="empty-message">チャットが登録されていません。</p>
         ) : null}
       </section>
     </main>
@@ -283,6 +300,7 @@ function IndexPage() {
 
 export default function App() {
   const slug = getSlug();
-  return slug ? <HandbookPage slug={slug} /> : <IndexPage />;
+  if (slug) return <HandbookPage slug={slug} />;
+  if (isAdminPath()) return <AdminPage />;
+  return <main className="status-page"><div className="status-card">ページが見つかりません。</div></main>;
 }
-

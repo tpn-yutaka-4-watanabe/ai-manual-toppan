@@ -15,6 +15,16 @@ export type BasicAuthCredential = {
   password: string;
 };
 
+export type AuthConfig = {
+  realm: string;
+  credentials: BasicAuthCredential[];
+};
+
+export type AdminConfig = {
+  title: string;
+  auth: AuthConfig;
+};
+
 export type HandbookApp = {
   slug: string;
   title: string;
@@ -27,10 +37,7 @@ export type HandbookApp = {
     projectId: string;
     apiKey: string;
   };
-  auth: {
-    realm: string;
-    credentials: BasicAuthCredential[];
-  };
+  auth: AuthConfig;
 };
 
 export type PublicHandbookConfig = Pick<
@@ -40,6 +47,7 @@ export type PublicHandbookConfig = Pick<
 
 export type HandbookRegistry = {
   apps: HandbookApp[];
+  admin: AdminConfig;
   indexEnabled: boolean;
   get(slug: string): HandbookApp | undefined;
   listPublic(): PublicHandbookConfig[];
@@ -167,8 +175,7 @@ function parseUsersJson(raw: string, envName: string) {
   });
 }
 
-function getCredentials(definition: HandbookDefinition, env: NodeJS.ProcessEnv, errors: string[]) {
-  const prefix = definition.envPrefix;
+function getCredentials(prefix: string, env: NodeJS.ProcessEnv, errors: string[]) {
   const jsonEnvName = `${prefix}_AUTH_USERS_JSON`;
   const usersJson = env[jsonEnvName]?.trim();
 
@@ -185,6 +192,13 @@ function getCredentials(definition: HandbookDefinition, env: NodeJS.ProcessEnv, 
   const username = requiredEnv(env, usernameName, errors);
   const password = requiredEnv(env, passwordName, errors);
   return username && password ? [{ username, password }] : [];
+}
+
+function buildAuthConfig(prefix: string, fallbackRealm: string, env: NodeJS.ProcessEnv, errors: string[]): AuthConfig {
+  return {
+    realm: env[`${prefix}_AUTH_REALM`]?.trim() || fallbackRealm,
+    credentials: getCredentials(prefix, env, errors),
+  };
 }
 
 function validateBaseUrl(value: string, envName: string) {
@@ -209,6 +223,11 @@ export function buildHandbookRegistry(
   const errors: string[] = [];
   const seenSlugs = new Set<string>();
   const seenPrefixes = new Set<string>();
+  const adminTitle = env.ADMIN_TITLE?.trim() || "販売基本ルールAI 管理";
+  const admin = {
+    title: adminTitle,
+    auth: buildAuthConfig("ADMIN", adminTitle, env, errors),
+  };
 
   const apps = definitions.map((definition) => {
     if (seenSlugs.has(definition.slug)) {
@@ -225,7 +244,6 @@ export function buildHandbookRegistry(
     const baseUrl = requiredEnv(env, baseUrlEnvName, errors);
     const projectId = requiredEnv(env, `${prefix}_BRAIN_PROJECT_ID`, errors);
     const apiKey = requiredEnv(env, `${prefix}_BRAIN_API_KEY`, errors);
-    const credentials = getCredentials(definition, env, errors);
 
     return {
       slug: definition.slug,
@@ -239,10 +257,7 @@ export function buildHandbookRegistry(
         projectId,
         apiKey,
       },
-      auth: {
-        realm: env[`${prefix}_AUTH_REALM`]?.trim() || definition.title,
-        credentials,
-      },
+      auth: buildAuthConfig(prefix, definition.title, env, errors),
     };
   });
 
@@ -253,6 +268,7 @@ export function buildHandbookRegistry(
   const bySlug = new Map(apps.map((app) => [app.slug, app]));
   return {
     apps,
+    admin,
     indexEnabled: isEnabled(env.HANDBOOK_INDEX_ENABLED),
     get(slug: string) {
       return bySlug.get(slug);
@@ -277,4 +293,3 @@ export function toPublicHandbookConfig(app: HandbookApp): PublicHandbookConfig {
     connectionName: app.connectionName,
   };
 }
-

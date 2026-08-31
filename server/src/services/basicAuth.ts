@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import type { NextFunction, Request, Response } from "express";
-import type { BasicAuthCredential, HandbookRegistry } from "../config/handbooks";
+import type { AuthConfig, BasicAuthCredential, HandbookRegistry } from "../config/handbooks";
 
 function safeCompare(left: string, right: string) {
   const leftBuffer = Buffer.from(left, "utf-8");
@@ -39,16 +39,34 @@ function matchesCredential(
   return safeCompare(actual.username, expected.username) && safeCompare(actual.password, expected.password);
 }
 
-function challenge(res: Response, realm: string, slug: string) {
+function challenge(res: Response, realm: string, scope: string) {
   const asciiRealm = realm
     .replace(/["\\]/g, "")
     .replace(/[^\x20-\x7E]/g, "")
     .trim();
-  const safeRealm = `${asciiRealm || "Sales Handbook AI"} (${slug})`;
+  const safeRealm = `${asciiRealm || "Sales Handbook AI"} (${scope})`;
   res.setHeader("WWW-Authenticate", `Basic realm="${safeRealm}", charset="UTF-8"`);
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("Vary", "Authorization");
   res.status(401).type("text/plain").send("Authentication required.");
+}
+
+export function requireBasicAuth(auth: AuthConfig, scope: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const actual = parseAuthorization(req.header("authorization"));
+    if (!actual || !auth.credentials.some((expected) => matchesCredential(actual, expected))) {
+      challenge(res, auth.realm, scope);
+      return;
+    }
+
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Vary", "Authorization");
+    next();
+  };
+}
+
+export function requireAdminAuth(registry: HandbookRegistry) {
+  return requireBasicAuth(registry.admin.auth, "admin");
 }
 
 export function requireHandbookAuth(registry: HandbookRegistry) {
@@ -60,14 +78,6 @@ export function requireHandbookAuth(registry: HandbookRegistry) {
       return;
     }
 
-    const actual = parseAuthorization(req.header("authorization"));
-    if (!actual || !app.auth.credentials.some((expected) => matchesCredential(actual, expected))) {
-      challenge(res, app.auth.realm, app.slug);
-      return;
-    }
-
-    res.setHeader("Cache-Control", "no-store");
-    res.setHeader("Vary", "Authorization");
-    next();
+    requireBasicAuth(app.auth, app.slug)(req, res, next);
   };
 }
