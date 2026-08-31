@@ -1,0 +1,11 @@
+[
+  {
+    "slug": "sogo-seibu-sales-handbook",
+    "envPrefix": "SOGO_SEIBU",
+    "title": "そごう西武販売手帳AI",
+    "assistantLabel": "そごう西武販売手帳AI",
+    "inputPlaceholder": "そごう西武の販売手帳について質問を入力",
+    "initialMessage": "そごう西武販売手帳AIです。確認したいことを入力してください。"
+  }
+]
+

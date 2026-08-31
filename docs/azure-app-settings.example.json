@@ -1,0 +1,52 @@
+[
+  {
+    "name": "NODE_ENV",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "HANDBOOK_INDEX_ENABLED",
+    "value": "false",
+    "slotSetting": false
+  },
+  {
+    "name": "BRAIN_REQUEST_TIMEOUT_MS",
+    "value": "180000",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_BRAIN_BASE_URL",
+    "value": "https://uat.brain.metaclone.jp",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_BRAIN_PROJECT_ID",
+    "value": "<Brain Project IDを入力>",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_BRAIN_API_KEY",
+    "value": "<Brain API Keyを入力>",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_BRAIN_CONNECTION_NAME",
+    "value": "そごう西武販売手帳AI Brain",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_AUTH_USERNAME",
+    "value": "<専用ユーザー名を入力>",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_AUTH_PASSWORD",
+    "value": "<十分に長い専用パスワードを入力>",
+    "slotSetting": false
+  },
+  {
+    "name": "SOGO_SEIBU_AUTH_REALM",
+    "value": "Sogo Seibu Sales Handbook AI",
+    "slotSetting": false
+  }
+]

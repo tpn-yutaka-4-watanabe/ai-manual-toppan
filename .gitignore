@@ -1,0 +1,14 @@
+node_modules/
+**/.tmp-node_modules-*/
+.tmp-package-lock-*.json
+client/dist/
+server/dist/
+coverage/
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+npm-debug.log*
+*.tsbuildinfo
