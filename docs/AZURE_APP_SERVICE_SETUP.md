@@ -59,6 +59,18 @@ Azure Portal で次を確認します。
 
 Azure Portal で App Service `ai-manual-toppan` を開き、上部の `発行プロファイルのダウンロード` から `.PublishSettings` ファイルを取得します。
 
+ボタンが押せない場合は、次を確認します。
+
+```text
+設定
+  -> 構成
+  -> 全般設定
+  -> SCM Basic Auth Publishing Credentials
+  -> On
+```
+
+変更した場合は保存後に App Service を再起動し、もう一度 `発行プロファイルのダウンロード` を試してください。
+
 次に GitHub リポジトリで以下へ進みます。
 
 ```text

@@ -37,6 +37,16 @@ jobs:
       - name: Keep runtime dependencies only
         run: npm prune --omit=dev
 
+      - name: Validate Azure publish profile secret
+        shell: bash
+        env:
+          AZURE_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        run: |
+          if [ -z "$AZURE_PUBLISH_PROFILE" ]; then
+            echo "::error::Missing repository secret AZURE_WEBAPP_PUBLISH_PROFILE. Download the publish profile from Azure App Service and add it to GitHub > Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+
       - name: Deploy
         uses: azure/webapps-deploy@v3
         with:
