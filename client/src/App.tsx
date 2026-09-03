@@ -29,11 +29,11 @@ function mergeText(current: string, incoming: string) {
 }
 
 type SourceReference = SourcePageTag & {
-  href: string;
+  imageUrl?: string;
 };
 
 function extractSourceReferences(text: string, source: PublicHandbookConfig["source"]) {
-  if (!source?.pdfUrl || !source.pageTags.length) {
+  if (!source?.pageTags.length) {
     return { body: text, references: [] as SourceReference[] };
   }
 
@@ -45,10 +45,7 @@ function extractSourceReferences(text: string, source: PublicHandbookConfig["sou
     if (!pageTag) return match;
     if (!seen.has(tag)) {
       seen.add(tag);
-      references.push({
-        ...pageTag,
-        href: `${source.pdfUrl}#page=${pageTag.pdfPage}`,
-      });
+      references.push(pageTag);
     }
     return "";
   }).trim();
@@ -59,17 +56,70 @@ function extractSourceReferences(text: string, source: PublicHandbookConfig["sou
   };
 }
 
-function SourceReferences({ references, sourceLabel }: { references: SourceReference[]; sourceLabel: string }) {
+function SourceReferences({
+  references,
+  sourceLabel,
+  onOpen,
+}: {
+  references: SourceReference[];
+  sourceLabel: string;
+  onOpen: (reference: SourceReference) => void;
+}) {
   if (!references.length) return null;
 
   return (
     <div className="source-references" aria-label="根拠ページ">
       <span>{sourceLabel}</span>
       {references.map((reference) => (
-        <a href={reference.href} target="_blank" rel="noreferrer" key={reference.tag}>
+        <button
+          type="button"
+          onClick={() => onOpen(reference)}
+          disabled={!reference.imageUrl}
+          title={reference.imageUrl ? "根拠ページを表示" : "根拠ページ画像が未設定です"}
+          key={reference.tag}
+        >
           {reference.label}
-        </a>
+        </button>
       ))}
+    </div>
+  );
+}
+
+function SourcePreviewModal({ reference, onClose }: { reference: SourceReference; onClose: () => void }) {
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="source-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section className="source-modal" role="dialog" aria-modal="true" aria-labelledby="source-preview-title">
+        <header className="source-modal-header">
+          <div>
+            <p>根拠ページ</p>
+            <h2 id="source-preview-title">{reference.label}</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="根拠ページを閉じる">閉じる</button>
+        </header>
+        <div className="source-modal-body">
+          {reference.imageUrl && !imageError ? (
+            <img src={reference.imageUrl} alt={reference.label} onError={() => setImageError(true)} />
+          ) : (
+            <p className="source-image-error">根拠ページ画像を読み込めませんでした。</p>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -149,7 +199,17 @@ function MarkdownText({ text }: { text: string }) {
   );
 }
 
-function MessageItem({ message, label, source }: { message: ChatMessage; label: string; source?: PublicHandbookConfig["source"] }) {
+function MessageItem({
+  message,
+  label,
+  source,
+  onOpenSource,
+}: {
+  message: ChatMessage;
+  label: string;
+  source?: PublicHandbookConfig["source"];
+  onOpenSource: (reference: SourceReference) => void;
+}) {
   if (message.role === "user") {
     return <div className="message-row user-row"><div className="user-bubble">{message.text}</div></div>;
   }
@@ -164,7 +224,7 @@ function MessageItem({ message, label, source }: { message: ChatMessage; label: 
         ) : (
           <div className="assistant-content">
             <MarkdownText text={rendered.body} />
-            <SourceReferences references={rendered.references} sourceLabel={source?.label ?? "参照PDF"} />
+            <SourceReferences references={rendered.references} sourceLabel={source?.label ?? "参照PDF"} onOpen={onOpenSource} />
           </div>
         )}
       </div>
@@ -181,6 +241,7 @@ function HandbookPage({ slug }: { slug: string }) {
   const [state, setState] = useState<unknown>();
   const [error, setError] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<SourceReference | null>(null);
   const stateRef = useRef<unknown>();
   const uidRef = useRef(sessionUid(slug));
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -295,7 +356,13 @@ function HandbookPage({ slug }: { slug: string }) {
       </header>
       <div className="chat-history" aria-live="polite">
         {messages.map((message) => (
-          <MessageItem message={message} label={config.assistantLabel} source={config.source} key={message.id} />
+          <MessageItem
+            message={message}
+            label={config.assistantLabel}
+            source={config.source}
+            onOpenSource={setSelectedSource}
+            key={message.id}
+          />
         ))}
         <div ref={bottomRef} />
       </div>
@@ -311,6 +378,7 @@ function HandbookPage({ slug }: { slug: string }) {
           <button type="submit" disabled={sending || !input.trim()}>送信</button>
         </form>
       </footer>
+      {selectedSource ? <SourcePreviewModal reference={selectedSource} onClose={() => setSelectedSource(null)} /> : null}
     </main>
   );
 }

@@ -9,7 +9,7 @@
 - 既存チャット用のBrainAPI環境変数は変更しない。
 - 追加するチャットだけに、新しい `slug` と `envPrefix` を割り当てる。
 - GitにBrainAPIキー、Project ID、Basic認証パスワード、Azure発行プロファイルを保存しない。
-- PDF根拠表示を使う場合は、該当チャットの `source` だけを追加・変更する。
+- 根拠ページ表示を使う場合は、該当チャットの `source` だけを追加・変更する。
 
 ## 追加時に変更する場所
 
@@ -20,10 +20,11 @@ config/handbooks.json
 Azure App Service の環境変数
 ```
 
-PDF根拠表示を使う場合は、配信用のPDFもリポジトリに含めます。
+根拠ページ表示を使う場合は、配信用のPDFとページ画像をリポジトリに含めます。
 
 ```text
 output/pdf/任意の抜粋PDF.pdf
+output/source-pages/<slug>/page_1.png
 ```
 
 ## 1. config/handbooks.json に追加する
@@ -41,6 +42,7 @@ output/pdf/任意の抜粋PDF.pdf
   "source": {
     "label": "販売基本ルール 抜粋PDF",
     "pdfPath": "output/pdf/example.pdf",
+    "imageDir": "output/source-pages/new-sales-rules",
     "pageTags": [
       { "tag": "page_1", "label": "p.1 参照ページ名", "sourcePage": 1, "pdfPage": 1 }
     ]
@@ -84,9 +86,11 @@ NEW_SALES_RULES_AUTH_REALM
 NEW_SALES_RULES_AUTH_USERS_JSON=[{"username":"user1","password":"password1"},{"username":"user2","password":"password2"}]
 ```
 
-## 3. PDF根拠表示を使う場合
+## 3. 根拠ページ表示を使う場合
 
-LLMの回答末尾に `[page_65]` のようなタグを出力させると、チャット画面側で根拠ページボタンに変換されます。ユーザーがボタンを押すと、該当チャットの認証付きPDFが別タブで開きます。
+LLMの回答末尾に `[page_65]` のようなタグを出力させると、チャット画面側で根拠ページボタンに変換されます。ユーザーがボタンを押すと、該当ページだけを切り出した画像が同じアプリ内のポップアップで表示されます。
+
+ページ画像は、`source.imageDir` に `page_65.png` のようなファイル名で配置します。
 
 `config/handbooks.json` の `source.pageTags` には次を入れます。
 
@@ -107,7 +111,7 @@ RAGに投入するMarkdownや疑似JSONにも、該当する `参照ページタ
 - 既存チャットのユーザーでは新チャットを開けない。
 - 新チャットで質問して、BrainAPIから回答が返る。
 - 回答末尾に `[page_XX]` が出る質問で、根拠ページボタンが表示される。
-- 根拠ページボタンを押すと、該当PDFページが開く。
+- 根拠ページボタンを押すと、同じアプリ内に該当ページ画像がポップアップ表示される。
 
 ## 避けること
 

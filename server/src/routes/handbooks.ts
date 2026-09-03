@@ -1,4 +1,6 @@
 import { Router, type RequestHandler } from "express";
+import fs from "node:fs";
+import path from "node:path";
 import type { HandbookRegistry } from "../config/handbooks";
 import { toPublicHandbookConfig } from "../config/handbooks";
 import { requireHandbookAuth } from "../services/basicAuth";
@@ -101,6 +103,10 @@ function routeSlug(value: string | string[]) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+function pageTag(value: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
 export function createHandbooksRouter(registry: HandbookRegistry) {
   const router = Router();
   const authorize = requireHandbookAuth(registry);
@@ -120,6 +126,28 @@ export function createHandbooksRouter(registry: HandbookRegistry) {
     res.setHeader("Content-Disposition", `inline; filename="${app.slug}-source.pdf"`);
     res.type("application/pdf");
     res.sendFile(app.source.pdfPath, (error) => {
+      if (error) next(error);
+    });
+  });
+
+  router.get("/:slug/source-pages/:tag.png", authorize, (req, res, next) => {
+    const app = registry.get(routeSlug(req.params.slug))!;
+    const tag = pageTag(req.params.tag);
+    const sourcePage = app.source?.pageTags.find((item) => item.tag === tag);
+    if (!app.source?.imageDir || !sourcePage) {
+      res.status(404).type("text/plain").send("Source page image is not configured for this handbook.");
+      return;
+    }
+
+    const imagePath = path.join(app.source.imageDir, `${sourcePage.tag}.png`);
+    if (!fs.existsSync(imagePath)) {
+      res.status(404).type("text/plain").send("Source page image was not found.");
+      return;
+    }
+
+    res.setHeader("Cache-Control", "private, no-store");
+    res.type("image/png");
+    res.sendFile(imagePath, (error) => {
       if (error) next(error);
     });
   });

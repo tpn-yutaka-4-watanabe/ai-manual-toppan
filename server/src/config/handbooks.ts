@@ -18,9 +18,14 @@ export type SourcePageTag = {
   pdfPage: number;
 };
 
+export type PublicSourcePageTag = SourcePageTag & {
+  imageUrl?: string;
+};
+
 export type HandbookSourceDefinition = {
   label?: string;
   pdfPath?: string;
+  imageDir?: string;
   pageTags?: SourcePageTag[];
 };
 
@@ -55,6 +60,7 @@ export type HandbookApp = {
   source?: {
     label: string;
     pdfPath?: string;
+    imageDir?: string;
     pageTags: SourcePageTag[];
   };
 };
@@ -66,7 +72,7 @@ export type PublicHandbookConfig = Pick<
   source?: {
     label: string;
     pdfUrl?: string;
-    pageTags: SourcePageTag[];
+    pageTags: PublicSourcePageTag[];
   };
 };
 
@@ -121,6 +127,7 @@ function parseSourceDefinition(value: unknown, fieldName: string): HandbookSourc
   return {
     label: typeof record.label === "string" && record.label.trim() ? record.label.trim() : undefined,
     pdfPath: typeof record.pdfPath === "string" && record.pdfPath.trim() ? record.pdfPath.trim() : undefined,
+    imageDir: typeof record.imageDir === "string" && record.imageDir.trim() ? record.imageDir.trim() : undefined,
     pageTags: pageTags.map((item, index) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) {
         throw new Error(`${fieldName}.pageTags[${index}] must be an object.`);
@@ -223,6 +230,37 @@ function resolveConfiguredFilePath(configuredPath: string, fieldName: string) {
   }
 
   return existingPath;
+}
+
+function resolveConfiguredDirectoryPath(configuredPath: string, fieldName: string) {
+  const cwd = process.cwd();
+  const candidates = path.isAbsolute(configuredPath)
+    ? [path.resolve(configuredPath)]
+    : [
+      path.resolve(cwd, configuredPath),
+      path.resolve(cwd, "..", configuredPath),
+    ];
+  const existingPath = candidates.find((candidate) => fs.existsSync(candidate) && fs.statSync(candidate).isDirectory());
+
+  if (!existingPath) {
+    throw new Error(`${fieldName} was not found. Checked: ${candidates.join(", ")}`);
+  }
+
+  return existingPath;
+}
+
+function validatePageImages(imageDir: string | undefined, pageTags: SourcePageTag[], fieldName: string) {
+  if (!imageDir) {
+    return;
+  }
+
+  const missing = pageTags
+    .map((pageTag) => path.join(imageDir, `${pageTag.tag}.png`))
+    .filter((candidate) => !fs.existsSync(candidate) || !fs.statSync(candidate).isFile());
+
+  if (missing.length > 0) {
+    throw new Error(`${fieldName} is missing page image files: ${missing.join(", ")}`);
+  }
 }
 
 function loadDefinitions() {
@@ -340,13 +378,21 @@ export function buildHandbookRegistry(
     const baseUrl = requiredEnv(env, baseUrlEnvName, errors);
     const projectId = requiredEnv(env, `${prefix}_BRAIN_PROJECT_ID`, errors);
     const apiKey = requiredEnv(env, `${prefix}_BRAIN_API_KEY`, errors);
-    const source = definition.source ? {
-      label: definition.source.label || `${definition.title} source`,
-      pdfPath: definition.source.pdfPath
-        ? resolveConfiguredFilePath(definition.source.pdfPath, `${definition.slug}.source.pdfPath`)
-        : undefined,
-      pageTags: definition.source.pageTags ?? [],
-    } : undefined;
+    const source = definition.source ? (() => {
+      const pageTags = definition.source?.pageTags ?? [];
+      const imageDir = definition.source?.imageDir
+        ? resolveConfiguredDirectoryPath(definition.source.imageDir, `${definition.slug}.source.imageDir`)
+        : undefined;
+      validatePageImages(imageDir, pageTags, `${definition.slug}.source.imageDir`);
+      return {
+        label: definition.source?.label || `${definition.title} source`,
+        pdfPath: definition.source?.pdfPath
+          ? resolveConfiguredFilePath(definition.source.pdfPath, `${definition.slug}.source.pdfPath`)
+          : undefined,
+        imageDir,
+        pageTags,
+      };
+    })() : undefined;
 
     return {
       slug: definition.slug,
@@ -398,7 +444,10 @@ export function toPublicHandbookConfig(app: HandbookApp): PublicHandbookConfig {
     source: app.source ? {
       label: app.source.label,
       pdfUrl: app.source.pdfPath ? `/api/handbooks/${app.slug}/source.pdf` : undefined,
-      pageTags: app.source.pageTags,
+      pageTags: app.source.pageTags.map((pageTag) => ({
+        ...pageTag,
+        imageUrl: app.source?.imageDir ? `/api/handbooks/${app.slug}/source-pages/${pageTag.tag}.png` : undefined,
+      })),
     } : undefined,
   };
 }

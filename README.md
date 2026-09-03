@@ -36,17 +36,17 @@ envPrefix: SEIBU_SOGO
 
 Brain Project ID、Brain API Key、Basic認証パスワードはブラウザへ返さず、Gitにも保存しません。必須の環境変数が不足している場合、アプリは起動時に失敗します。設定ミスのまま認証なしで公開されることを避けるためです。
 
-## 根拠PDF表示
+## 根拠ページ表示
 
 LLMの回答末尾に `[page_65]` のようなページタグが含まれると、チャット画面はそのタグを本文から取り除き、代わりに根拠ページボタンとして表示します。
 
-根拠ページボタンを押すと、該当チャットの認証付きPDFを別タブで開きます。
+根拠ページボタンを押すと、該当ページだけを切り出した画像を同じアプリ内のポップアップで表示します。画像は該当チャットの認証付きAPIから読み込みます。
 
 ```text
-/api/handbooks/seibu-sogo-sales-basic-rules/source.pdf#page=1
+/api/handbooks/seibu-sogo-sales-basic-rules/source-pages/page_65.png
 ```
 
-タグとPDFページの対応は `config/handbooks.json` の `source.pageTags` で管理します。RAGに投入する疑似JSONにも `参照ページタグ` を持たせています。
+タグとPDFページ・ページ画像の対応は `config/handbooks.json` の `source.pageTags` と `source.imageDir` で管理します。RAGに投入する疑似JSONにも `参照ページタグ` を持たせています。
 
 ## 主な環境変数
 
@@ -109,7 +109,7 @@ npm run dev
 npm test
 ```
 
-テストでは、管理画面とチャット画面の認証分離、URL別認証、秘密情報の非公開、BrainAPI SSEプロキシ、根拠PDF配信を確認します。実際のBrainAPIは呼びません。
+テストでは、管理画面とチャット画面の認証分離、URL別認証、秘密情報の非公開、BrainAPI SSEプロキシ、根拠PDF/根拠ページ画像配信を確認します。実際のBrainAPIは呼びません。
 
 ## デプロイ
 

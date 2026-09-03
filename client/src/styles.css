@@ -298,7 +298,7 @@ button:disabled {
   font-weight: 800;
 }
 
-.source-references a {
+.source-references button {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
@@ -307,12 +307,99 @@ button:disabled {
   border-radius: 999px;
   background: #eff6ff;
   color: var(--accent-dark);
+  cursor: pointer;
   font-weight: 800;
   text-decoration: none;
 }
 
-.source-references a:hover {
+.source-references button:hover:not(:disabled) {
   background: #dbeafe;
+}
+
+.source-references button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.source-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.source-modal {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(94vw, 840px);
+  max-height: min(92vh, 980px);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 16px;
+  background: #f8fafc;
+  box-shadow: 0 26px 70px rgba(15, 23, 42, 0.28);
+}
+
+.source-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+}
+
+.source-modal-header p {
+  margin: 0 0 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.source-modal-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.source-modal-header button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.source-modal-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  text-align: center;
+}
+
+.source-modal-body img {
+  width: min(100%, 767px);
+  height: auto;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1);
+}
+
+.source-image-error {
+  margin: 24px auto;
+  color: #be123c;
+  line-height: 1.6;
 }
 
 .loading-bubble {

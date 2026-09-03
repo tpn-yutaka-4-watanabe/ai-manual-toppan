@@ -15,6 +15,7 @@ const definitions = [
     source: {
       label: "Alpha source PDF",
       pdfPath: "tests/fixtures/source.pdf",
+      imageDir: "tests/fixtures/source-pages",
       pageTags: [
         { tag: "page_1", label: "p.1 Alpha source", sourcePage: 1, pdfPage: 1 },
       ],
@@ -84,7 +85,9 @@ test("public configuration never includes Brain or authentication secrets", () =
   assert.equal(json.includes("alpha-project"), false);
   assert.equal(json.includes("admin-password"), false);
   assert.equal(json.includes("tests/fixtures/source.pdf"), false);
+  assert.equal(json.includes("tests/fixtures/source-pages"), false);
   assert.match(json, /"pdfUrl":"\/api\/handbooks\/alpha-handbook\/source\.pdf"/);
+  assert.match(json, /"imageUrl":"\/api\/handbooks\/alpha-handbook\/source-pages\/page_1\.png"/);
   assert.match(json, /"tag":"page_1"/);
 });
 
@@ -142,7 +145,13 @@ test("admin and handbook URLs enforce separate credentials", async () => {
     assert.equal(publicConfig.source.label, "Alpha source PDF");
     assert.equal(publicConfig.source.pdfUrl, "/api/handbooks/alpha-handbook/source.pdf");
     assert.deepEqual(publicConfig.source.pageTags, [
-      { tag: "page_1", label: "p.1 Alpha source", sourcePage: 1, pdfPage: 1 },
+      {
+        tag: "page_1",
+        label: "p.1 Alpha source",
+        sourcePage: 1,
+        pdfPage: 1,
+        imageUrl: "/api/handbooks/alpha-handbook/source-pages/page_1.png",
+      },
     ]);
 
     const anonymousSource = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source.pdf`, { redirect: "manual" });
@@ -159,6 +168,26 @@ test("admin and handbook URLs enforce separate credentials", async () => {
     assert.equal(sourcePdf.status, 200);
     assert.match(sourcePdf.headers.get("content-type") ?? "", /application\/pdf/);
     assert.equal(Buffer.from(await sourcePdf.arrayBuffer()).toString("utf-8", 0, 8), "%PDF-1.1");
+
+    const anonymousSourceImage = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source-pages/page_1.png`, { redirect: "manual" });
+    assert.equal(anonymousSourceImage.status, 401);
+
+    const sourceImageWithAdminUser = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source-pages/page_1.png`, {
+      headers: { Authorization: basic("admin-user", "admin-password") },
+    });
+    assert.equal(sourceImageWithAdminUser.status, 401);
+
+    const sourceImage = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source-pages/page_1.png`, {
+      headers: { Authorization: basic("alpha-user", "alpha-password") },
+    });
+    assert.equal(sourceImage.status, 200);
+    assert.match(sourceImage.headers.get("content-type") ?? "", /image\/png/);
+    assert.equal(Buffer.from(await sourceImage.arrayBuffer()).toString("hex", 0, 8), "89504e470d0a1a0a");
+
+    const missingSourceImage = await fetch(`${running.baseUrl}/api/handbooks/alpha-handbook/source-pages/page_999.png`, {
+      headers: { Authorization: basic("alpha-user", "alpha-password") },
+    });
+    assert.equal(missingSourceImage.status, 404);
   } finally {
     await running.close();
   }

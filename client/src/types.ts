@@ -3,6 +3,7 @@ export type SourcePageTag = {
   label: string;
   sourcePage: number;
   pdfPage: number;
+  imageUrl?: string;
 };
 
 export type PublicHandbookConfig = {

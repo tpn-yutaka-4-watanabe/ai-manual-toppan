@@ -9,6 +9,7 @@
     "source": {
       "label": "販売基本ルール 抜粋PDF",
       "pdfPath": "output/pdf/sales-basic-rules_pages-65-82_108-109.pdf",
+      "imageDir": "output/source-pages/seibu-sogo-sales-basic-rules",
       "pageTags": [
         { "tag": "page_65", "label": "p.65 金券・小切手の取扱い方", "sourcePage": 65, "pdfPage": 1 },
         { "tag": "page_66", "label": "p.66 金券・小切手の券面例", "sourcePage": 66, "pdfPage": 2 },
