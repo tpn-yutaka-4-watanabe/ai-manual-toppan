@@ -1,0 +1,37 @@
+[
+  {
+    "name": "BRAIN_BASE_URL",
+    "value": "<現在のSEIBU_SOGO_BRAIN_BASE_URLの実際の値>",
+    "slotSetting": false
+  },
+  {
+    "name": "BRAIN_API_KEY",
+    "value": "<現在のSEIBU_SOGO_BRAIN_API_KEYの実際の値>",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_BRAIN_PROJECT_ID",
+    "value": "31698489-b2bd-4409-b472-d5cd4027e117",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_BRAIN_CONNECTION_NAME",
+    "value": "TOPPAN 汎用販売手帳AI Brain",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_AUTH_USERNAME",
+    "value": "<新しいチャット用ユーザー名>",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_AUTH_PASSWORD",
+    "value": "<新しいチャット用の強力なパスワード>",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_AUTH_REALM",
+    "value": "TOPPAN 汎用販売手帳AI",
+    "slotSetting": false
+  }
+]

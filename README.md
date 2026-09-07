@@ -12,6 +12,7 @@
 
 チャット画面:
 /chats/seibu-sogo-sales-basic-rules
+/chats/toppan-generic-sales-handbook
 ```
 
 今回の初期チャット設定:
@@ -34,7 +35,7 @@ envPrefix: SEIBU_SOGO
   -> サーバー側でBrainAPIへ接続
 ```
 
-Brain Project ID、Brain API Key、Basic認証パスワードはブラウザへ返さず、Gitにも保存しません。必須の環境変数が不足している場合、アプリは起動時に失敗します。設定ミスのまま認証なしで公開されることを避けるためです。
+Brain Project ID、Brain API Key、Basic認証パスワードはブラウザへ返さず、Gitにも保存しません。BrainAPIの接続先とAPIキーは全チャット共通、Project IDとBasic認証はチャット別に管理します。必須の環境変数が不足している場合、アプリは起動時に失敗します。設定ミスのまま認証なしで公開されることを避けるためです。
 
 ## 根拠ページ表示
 
@@ -59,16 +60,31 @@ ADMIN_AUTH_REALM
 ADMIN_TITLE
 ```
 
+全チャット共通のBrainAPI接続情報:
+
+```text
+BRAIN_BASE_URL
+BRAIN_API_KEY
+```
+
 西部・そごう 販売基本ルールAI 用:
 
 ```text
-SEIBU_SOGO_BRAIN_BASE_URL
 SEIBU_SOGO_BRAIN_PROJECT_ID
-SEIBU_SOGO_BRAIN_API_KEY
 SEIBU_SOGO_BRAIN_CONNECTION_NAME
 SEIBU_SOGO_AUTH_USERNAME
 SEIBU_SOGO_AUTH_PASSWORD
 SEIBU_SOGO_AUTH_REALM
+```
+
+TOPPAN 汎用販売手帳AI 用:
+
+```text
+TOPPAN_GENERIC_BRAIN_PROJECT_ID
+TOPPAN_GENERIC_BRAIN_CONNECTION_NAME
+TOPPAN_GENERIC_AUTH_USERNAME
+TOPPAN_GENERIC_AUTH_PASSWORD
+TOPPAN_GENERIC_AUTH_REALM
 ```
 
 複数ユーザーを許可したい場合は、`*_AUTH_USERNAME` / `*_AUTH_PASSWORD` の代わりに `*_AUTH_USERS_JSON` を使えます。

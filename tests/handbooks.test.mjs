@@ -30,14 +30,12 @@ function environment(overrides = {}) {
     ADMIN_AUTH_PASSWORD: "admin-password",
     ADMIN_AUTH_REALM: "Admin",
     ADMIN_TITLE: "販売基本ルールAI 管理",
-    ALPHA_BRAIN_BASE_URL: "http://127.0.0.1:9",
+    BRAIN_BASE_URL: "http://127.0.0.1:9",
+    BRAIN_API_KEY: "shared-api-secret",
     ALPHA_BRAIN_PROJECT_ID: "alpha-project",
-    ALPHA_BRAIN_API_KEY: "alpha-api-secret",
     ALPHA_AUTH_USERNAME: "alpha-user",
     ALPHA_AUTH_PASSWORD: "alpha-password",
-    BETA_BRAIN_BASE_URL: "http://127.0.0.1:9",
     BETA_BRAIN_PROJECT_ID: "beta-project",
-    BETA_BRAIN_API_KEY: "beta-api-secret",
     BETA_AUTH_USERNAME: "beta-user",
     BETA_AUTH_PASSWORD: "beta-password",
     ...overrides,
@@ -68,6 +66,27 @@ test("configuration fails closed when a required secret is missing", () => {
   );
 });
 
+test("all handbooks share the BrainAPI endpoint and API key while keeping separate project IDs", () => {
+  const registry = buildHandbookRegistry(definitions, environment());
+  const alpha = registry.get("alpha-handbook");
+  const beta = registry.get("beta-handbook");
+
+  assert.equal(alpha.brain.baseUrl, beta.brain.baseUrl);
+  assert.equal(alpha.brain.apiKey, "shared-api-secret");
+  assert.equal(beta.brain.apiKey, "shared-api-secret");
+  assert.equal(alpha.brain.projectId, "alpha-project");
+  assert.equal(beta.brain.projectId, "beta-project");
+});
+
+test("configuration fails closed when the shared BrainAPI key is missing", () => {
+  const env = environment();
+  delete env.BRAIN_API_KEY;
+  assert.throws(
+    () => buildHandbookRegistry(definitions, env),
+    /BRAIN_API_KEY/,
+  );
+});
+
 test("admin authentication also fails closed when it is incomplete", () => {
   const env = environment();
   delete env.ADMIN_AUTH_PASSWORD;
@@ -80,7 +99,7 @@ test("admin authentication also fails closed when it is incomplete", () => {
 test("public configuration never includes Brain or authentication secrets", () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const json = JSON.stringify(toPublicHandbookConfig(registry.get("alpha-handbook")));
-  assert.equal(json.includes("alpha-api-secret"), false);
+  assert.equal(json.includes("shared-api-secret"), false);
   assert.equal(json.includes("alpha-password"), false);
   assert.equal(json.includes("alpha-project"), false);
   assert.equal(json.includes("admin-password"), false);
@@ -215,7 +234,7 @@ test("BrainAPI SSE is proxied without exposing its API key to the browser", asyn
   });
 
   const registry = buildHandbookRegistry([definitions[0]], environment({
-    ALPHA_BRAIN_BASE_URL: brain.baseUrl,
+    BRAIN_BASE_URL: brain.baseUrl,
   }));
   const running = await listen(createApp(registry));
 
@@ -233,8 +252,8 @@ test("BrainAPI SSE is proxied without exposing its API key to the browser", asyn
     assert.match(text, /event: message/);
     assert.match(text, /販売手帳の回答/);
     assert.match(text, /次の質問/);
-    assert.equal(text.includes("alpha-api-secret"), false);
-    assert.equal(receivedBody.apiKey, "alpha-api-secret");
+    assert.equal(text.includes("shared-api-secret"), false);
+    assert.equal(receivedBody.apiKey, "shared-api-secret");
     assert.equal(receivedBody.projectId, "alpha-project");
     assert.equal(receivedBody.stream, true);
     assert.deepEqual(receivedBody.files, []);

@@ -1,12 +1,13 @@
 # チャット追加ガイドライン
 
-このアプリは、1つのAzure App Service上で複数の販売手帳AIを別URL・別認証で提供する構成です。新しいチャットを追加するときは、既存チャットの `slug`、`envPrefix`、環境変数、資料ファイルを変更しないでください。
+このアプリは、1つのAzure App Service上で複数の販売手帳AIを別URL・別認証で提供する構成です。BrainAPIの接続先とAPIキーは全チャット共通、Project IDと認証情報はチャット別です。新しいチャットを追加するときは、既存チャットの `slug`、`envPrefix`、チャット別環境変数、資料ファイルを変更しないでください。
 
 ## 基本方針
 
 - 既存チャットの `slug` は変更しない。
 - 既存チャットの `envPrefix` は変更しない。
-- 既存チャット用のBrainAPI環境変数は変更しない。
+- 共通の `BRAIN_BASE_URL` / `BRAIN_API_KEY` は、新しいチャット追加時に増やさない。
+- 既存チャット用のProject IDと認証環境変数は変更しない。
 - 追加するチャットだけに、新しい `slug` と `envPrefix` を割り当てる。
 - GitにBrainAPIキー、Project ID、Basic認証パスワード、Azure発行プロファイルを保存しない。
 - 根拠ページ表示を使う場合は、該当チャットの `source` だけを追加・変更する。
@@ -59,9 +60,8 @@ output/source-pages/<slug>/page_1.png
 `envPrefix` は環境変数名の接頭辞になります。
 
 ```text
-NEW_SALES_RULES_BRAIN_BASE_URL
 NEW_SALES_RULES_BRAIN_PROJECT_ID
-NEW_SALES_RULES_BRAIN_API_KEY
+NEW_SALES_RULES_BRAIN_CONNECTION_NAME
 NEW_SALES_RULES_AUTH_USERNAME
 NEW_SALES_RULES_AUTH_PASSWORD
 ```
@@ -71,13 +71,18 @@ NEW_SALES_RULES_AUTH_PASSWORD
 新しい `envPrefix` に対応する環境変数を追加します。
 
 ```text
-NEW_SALES_RULES_BRAIN_BASE_URL
 NEW_SALES_RULES_BRAIN_PROJECT_ID
-NEW_SALES_RULES_BRAIN_API_KEY
 NEW_SALES_RULES_BRAIN_CONNECTION_NAME
 NEW_SALES_RULES_AUTH_USERNAME
 NEW_SALES_RULES_AUTH_PASSWORD
 NEW_SALES_RULES_AUTH_REALM
+```
+
+次の2項目は全チャット共通です。通常、新しいチャットを追加するたびに設定する必要はありません。
+
+```text
+BRAIN_BASE_URL
+BRAIN_API_KEY
 ```
 
 複数ユーザーにしたい場合は、`NEW_SALES_RULES_AUTH_USERNAME` / `NEW_SALES_RULES_AUTH_PASSWORD` の代わりに次を使えます。

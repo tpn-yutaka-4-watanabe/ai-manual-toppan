@@ -33,5 +33,13 @@
         { "tag": "page_109", "label": "p.109 免税の手続き方法・免税対象商品と免税購入額", "sourcePage": 109, "pdfPage": 20 }
       ]
     }
+  },
+  {
+    "slug": "toppan-generic-sales-handbook",
+    "envPrefix": "TOPPAN_GENERIC",
+    "title": "TOPPAN 汎用販売手帳AI",
+    "assistantLabel": "TOPPAN 汎用販売手帳AI",
+    "inputPlaceholder": "販売手続・カード取扱い・エラー対応・併用可否について質問を入力してください",
+    "initialMessage": "TOPPAN 汎用販売手帳AIです。販売手続・クレジットカード取扱い・特典・併用可否・エラー対応・問合せ先について質問してください。"
   }
 ]

@@ -1,22 +1,17 @@
 [
   {
-    "name": "NODE_ENV",
-    "value": "production",
-    "slotSetting": false
-  },
-  {
-    "name": "ADMIN_AUTH_USERNAME",
-    "value": "<admin-username>",
-    "slotSetting": false
-  },
-  {
     "name": "ADMIN_AUTH_PASSWORD",
-    "value": "<admin-strong-password>",
+    "value": "<管理画面用パスワードを入力>",
     "slotSetting": false
   },
   {
     "name": "ADMIN_AUTH_REALM",
     "value": "Sales Basic Rules AI Admin",
+    "slotSetting": false
+  },
+  {
+    "name": "ADMIN_AUTH_USERNAME",
+    "value": "toppan-admin",
     "slotSetting": false
   },
   {
@@ -31,12 +26,47 @@
   },
   {
     "name": "BRAIN_API_KEY",
-    "value": "<Brain API Key>",
+    "value": "<Brain APIキーを入力>",
     "slotSetting": false
   },
   {
-    "name": "SEIBU_SOGO_BRAIN_PROJECT_ID",
-    "value": "<Brain Project ID>",
+    "name": "BRAIN_REQUEST_TIMEOUT_MS",
+    "value": "180000",
+    "slotSetting": false
+  },
+  {
+    "name": "HANDBOOK_INDEX_ENABLED",
+    "value": "false",
+    "slotSetting": false
+  },
+  {
+    "name": "NODE_ENV",
+    "value": "production",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_PASSWORD",
+    "value": "<西部・そごうチャット用パスワードを入力>",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_REALM",
+    "value": "Seibu Sogo Sales Basic Rules AI",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_AUTH_USERNAME",
+    "value": "seibu-sogo",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_BASE_URL",
+    "value": "https://uat.brain.metaclone.jp",
+    "slotSetting": false
+  },
+  {
+    "name": "SEIBU_SOGO_BRAIN_API_KEY",
+    "value": "<BRAIN_API_KEYと同じ値を移行中のみ入力>",
     "slotSetting": false
   },
   {
@@ -45,18 +75,8 @@
     "slotSetting": false
   },
   {
-    "name": "SEIBU_SOGO_AUTH_USERNAME",
-    "value": "<chat-username>",
-    "slotSetting": false
-  },
-  {
-    "name": "SEIBU_SOGO_AUTH_PASSWORD",
-    "value": "<chat-strong-password>",
-    "slotSetting": false
-  },
-  {
-    "name": "SEIBU_SOGO_AUTH_REALM",
-    "value": "西部・そごう 販売基本ルールAI",
+    "name": "SEIBU_SOGO_BRAIN_PROJECT_ID",
+    "value": "aa83424c-6a8f-49a4-b6ba-cd048cf8dc13",
     "slotSetting": false
   },
   {
@@ -71,27 +91,17 @@
   },
   {
     "name": "TOPPAN_GENERIC_AUTH_USERNAME",
-    "value": "<chat-username>",
+    "value": "toppan-generic",
     "slotSetting": false
   },
   {
     "name": "TOPPAN_GENERIC_AUTH_PASSWORD",
-    "value": "<chat-strong-password>",
+    "value": "<TOPPAN汎用チャット用パスワードを入力>",
     "slotSetting": false
   },
   {
     "name": "TOPPAN_GENERIC_AUTH_REALM",
     "value": "TOPPAN 汎用販売手帳AI",
-    "slotSetting": false
-  },
-  {
-    "name": "HANDBOOK_INDEX_ENABLED",
-    "value": "false",
-    "slotSetting": false
-  },
-  {
-    "name": "BRAIN_REQUEST_TIMEOUT_MS",
-    "value": "180000",
     "slotSetting": false
   }
 ]

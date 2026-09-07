@@ -358,6 +358,10 @@ export function buildHandbookRegistry(
   const seenSlugs = new Set<string>();
   const seenPrefixes = new Set<string>();
   const adminTitle = env.ADMIN_TITLE?.trim() || "販売基本ルールAI 管理";
+  const brainBaseUrlEnvName = "BRAIN_BASE_URL";
+  const brainBaseUrl = requiredEnv(env, brainBaseUrlEnvName, errors);
+  const brainApiKey = requiredEnv(env, "BRAIN_API_KEY", errors);
+  const normalizedBrainBaseUrl = brainBaseUrl ? validateBaseUrl(brainBaseUrl, brainBaseUrlEnvName) : "";
   const admin = {
     title: adminTitle,
     auth: buildAuthConfig("ADMIN", adminTitle, env, errors),
@@ -374,10 +378,7 @@ export function buildHandbookRegistry(
     seenPrefixes.add(definition.envPrefix);
 
     const prefix = definition.envPrefix;
-    const baseUrlEnvName = `${prefix}_BRAIN_BASE_URL`;
-    const baseUrl = requiredEnv(env, baseUrlEnvName, errors);
     const projectId = requiredEnv(env, `${prefix}_BRAIN_PROJECT_ID`, errors);
-    const apiKey = requiredEnv(env, `${prefix}_BRAIN_API_KEY`, errors);
     const source = definition.source ? (() => {
       const pageTags = definition.source?.pageTags ?? [];
       const imageDir = definition.source?.imageDir
@@ -402,9 +403,9 @@ export function buildHandbookRegistry(
       initialMessage: definition.initialMessage || `${definition.title}です。確認したいことを入力してください。`,
       connectionName: env[`${prefix}_BRAIN_CONNECTION_NAME`]?.trim() || `${definition.title} Brain`,
       brain: {
-        baseUrl: baseUrl ? validateBaseUrl(baseUrl, baseUrlEnvName) : "",
+        baseUrl: normalizedBrainBaseUrl,
         projectId,
-        apiKey,
+        apiKey: brainApiKey,
       },
       auth: buildAuthConfig(prefix, definition.title, env, errors),
       source,
