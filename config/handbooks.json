@@ -42,13 +42,19 @@
     "inputPlaceholder": "販売手続・カード取扱い・エラー対応・併用可否について質問を入力してください",
     "initialMessage": "TOPPAN 汎用販売手帳AIです。販売手続・クレジットカード取扱い・特典・併用可否・エラー対応・問合せ先について質問してください。",
     "source": {
-      "label": "販売手続編 TOPPAN版 抜粋PDF",
-      "pdfPath": "output/pdf/販売手続編_TOPPAN版_pages-8-10-13.pdf",
+      "label": "TOPPAN 店頭決済対応ガイド",
+      "pdfPath": "output/pdf/TOPPAN_店頭決済対応ガイド_オリジナル版.pdf",
       "imageDir": "output/source-pages/toppan-generic-sales-handbook",
       "pageTags": [
-        { "tag": "page_8", "label": "p.8 他社クレジットカード取扱い一覧表（冊子 pp.36-37）", "sourcePage": 8, "pdfPage": 1 },
-        { "tag": "page_10", "label": "p.10 エラー・ステータスコード表（冊子 pp.40-41）", "sourcePage": 10, "pdfPage": 2 },
-        { "tag": "page_13", "label": "p.13 併用・優待可否一覧表（冊子 pp.46-47）", "sourcePage": 13, "pdfPage": 3 }
+        { "tag": "page_1", "label": "p.1 AIチャットボット 想定質問・回答例（20件）", "sourcePage": 1, "pdfPage": 1 },
+        { "tag": "page_2", "label": "p.2 支払区分・受付条件一覧表（01-09）", "sourcePage": 2, "pdfPage": 2 },
+        { "tag": "page_3", "label": "p.3 支払区分・受付条件一覧表（10-18）", "sourcePage": 3, "pdfPage": 3 },
+        { "tag": "page_4", "label": "p.4 端末通知・再操作区分（R00-R20）", "sourcePage": 4, "pdfPage": 4 },
+        { "tag": "page_5", "label": "p.5 取引状態・照合対象・復旧判断表", "sourcePage": 5, "pdfPage": 5 },
+        { "tag": "page_6", "label": "p.6 併用・差額決済 可否マトリクス（行01-09）", "sourcePage": 6, "pdfPage": 6 },
+        { "tag": "page_7", "label": "p.7 併用・差額決済 可否マトリクス（行10-18）", "sourcePage": 7, "pdfPage": 7 },
+        { "tag": "page_8", "label": "p.8 ポイント・優待・取消・返品 取扱一覧（01-10）", "sourcePage": 8, "pdfPage": 8 },
+        { "tag": "page_9", "label": "p.9 ポイント・優待・取消・返品 取扱一覧（11-20）", "sourcePage": 9, "pdfPage": 9 }
       ]
     }
   }
