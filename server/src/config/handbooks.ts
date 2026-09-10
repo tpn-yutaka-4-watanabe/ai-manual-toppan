@@ -88,6 +88,10 @@ const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const envPrefixPattern = /^[A-Z][A-Z0-9_]*$/;
 const pageTagPattern = /^page_[a-z0-9_]+$/;
 
+function normalizeDisplayName(value: string) {
+  return value.replaceAll("西部・そごう", "西武・そごう");
+}
+
 function isEnabled(value: string | undefined) {
   return ["1", "true", "yes", "on"].includes((value ?? "").trim().toLowerCase());
 }
@@ -330,7 +334,7 @@ function getCredentials(prefix: string, env: NodeJS.ProcessEnv, errors: string[]
 
 function buildAuthConfig(prefix: string, fallbackRealm: string, env: NodeJS.ProcessEnv, errors: string[]): AuthConfig {
   return {
-    realm: env[`${prefix}_AUTH_REALM`]?.trim() || fallbackRealm,
+    realm: normalizeDisplayName(env[`${prefix}_AUTH_REALM`]?.trim() || fallbackRealm),
     credentials: getCredentials(prefix, env, errors),
   };
 }
@@ -357,7 +361,7 @@ export function buildHandbookRegistry(
   const errors: string[] = [];
   const seenSlugs = new Set<string>();
   const seenPrefixes = new Set<string>();
-  const adminTitle = env.ADMIN_TITLE?.trim() || "販売基本ルールAI 管理";
+  const adminTitle = normalizeDisplayName(env.ADMIN_TITLE?.trim() || "販売基本ルールAI 管理");
   const brainBaseUrlEnvName = "BRAIN_BASE_URL";
   const brainBaseUrl = requiredEnv(env, brainBaseUrlEnvName, errors);
   const brainApiKey = requiredEnv(env, "BRAIN_API_KEY", errors);
@@ -378,6 +382,7 @@ export function buildHandbookRegistry(
     seenPrefixes.add(definition.envPrefix);
 
     const prefix = definition.envPrefix;
+    const title = normalizeDisplayName(definition.title);
     const projectId = requiredEnv(env, `${prefix}_BRAIN_PROJECT_ID`, errors);
     const source = definition.source ? (() => {
       const pageTags = definition.source?.pageTags ?? [];
@@ -386,7 +391,7 @@ export function buildHandbookRegistry(
         : undefined;
       validatePageImages(imageDir, pageTags, `${definition.slug}.source.imageDir`);
       return {
-        label: definition.source?.label || `${definition.title} source`,
+        label: normalizeDisplayName(definition.source?.label || `${title} source`),
         pdfPath: definition.source?.pdfPath
           ? resolveConfiguredFilePath(definition.source.pdfPath, `${definition.slug}.source.pdfPath`)
           : undefined,
@@ -397,17 +402,17 @@ export function buildHandbookRegistry(
 
     return {
       slug: definition.slug,
-      title: definition.title,
-      assistantLabel: definition.assistantLabel || definition.title,
-      inputPlaceholder: definition.inputPlaceholder || `${definition.title}について質問を入力`,
-      initialMessage: definition.initialMessage || `${definition.title}です。確認したいことを入力してください。`,
-      connectionName: env[`${prefix}_BRAIN_CONNECTION_NAME`]?.trim() || `${definition.title} Brain`,
+      title,
+      assistantLabel: normalizeDisplayName(definition.assistantLabel || title),
+      inputPlaceholder: normalizeDisplayName(definition.inputPlaceholder || `${title}について質問を入力`),
+      initialMessage: normalizeDisplayName(definition.initialMessage || `${title}です。確認したいことを入力してください。`),
+      connectionName: normalizeDisplayName(env[`${prefix}_BRAIN_CONNECTION_NAME`]?.trim() || `${title} Brain`),
       brain: {
         baseUrl: normalizedBrainBaseUrl,
         projectId,
         apiKey: brainApiKey,
       },
-      auth: buildAuthConfig(prefix, definition.title, env, errors),
+      auth: buildAuthConfig(prefix, title, env, errors),
       source,
     };
   });

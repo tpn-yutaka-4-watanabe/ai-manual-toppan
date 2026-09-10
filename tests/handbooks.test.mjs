@@ -110,6 +110,31 @@ test("public configuration never includes Brain or authentication secrets", () =
   assert.match(json, /"tag":"page_1"/);
 });
 
+test("legacy Seibu Sogo typo is normalized even when environment configuration overrides the file", () => {
+  const registry = buildHandbookRegistry([
+    {
+      slug: "seibu-sogo-sales-basic-rules",
+      envPrefix: "SEIBU_SOGO",
+      title: "西部・そごう 販売基本ルールAI",
+      assistantLabel: "西部・そごう 販売基本ルールAI",
+      initialMessage: "西部・そごう 販売基本ルールAIです。",
+    },
+  ], environment({
+    SEIBU_SOGO_BRAIN_PROJECT_ID: "seibu-sogo-project",
+    SEIBU_SOGO_AUTH_USERNAME: "seibu-sogo-user",
+    SEIBU_SOGO_AUTH_PASSWORD: "seibu-sogo-password",
+    SEIBU_SOGO_AUTH_REALM: "西部・そごう 販売基本ルールAI",
+    SEIBU_SOGO_BRAIN_CONNECTION_NAME: "西部・そごう 販売基本ルールAI Brain",
+  }));
+  const app = registry.get("seibu-sogo-sales-basic-rules");
+
+  assert.equal(app.title, "西武・そごう 販売基本ルールAI");
+  assert.equal(app.assistantLabel, "西武・そごう 販売基本ルールAI");
+  assert.equal(app.initialMessage, "西武・そごう 販売基本ルールAIです。");
+  assert.equal(app.connectionName, "西武・そごう 販売基本ルールAI Brain");
+  assert.equal(app.auth.realm, "西武・そごう 販売基本ルールAI");
+});
+
 test("admin and handbook URLs enforce separate credentials", async () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const running = await listen(createApp(registry));
