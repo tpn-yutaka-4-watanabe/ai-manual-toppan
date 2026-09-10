@@ -86,7 +86,7 @@
   },
   {
     "name": "TOPPAN_GENERIC_BRAIN_CONNECTION_NAME",
-    "value": "TOPPAN 汎用販売手帳AI Brain",
+    "value": "TOPPAN百貨店　販売手帳AI Brain",
     "slotSetting": false
   },
   {
@@ -101,7 +101,7 @@
   },
   {
     "name": "TOPPAN_GENERIC_AUTH_REALM",
-    "value": "TOPPAN 汎用販売手帳AI",
+    "value": "TOPPAN百貨店　販売手帳AI",
     "slotSetting": false
   }
 ]

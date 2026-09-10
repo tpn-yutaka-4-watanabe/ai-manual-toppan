@@ -89,7 +89,10 @@ const envPrefixPattern = /^[A-Z][A-Z0-9_]*$/;
 const pageTagPattern = /^page_[a-z0-9_]+$/;
 
 function normalizeDisplayName(value: string) {
-  return value.replaceAll("西部・そごう", "西武・そごう");
+  return value
+    .replaceAll("西部・そごう", "西武・そごう")
+    .replaceAll("TOPPAN 汎用販売手帳AI", "TOPPAN百貨店　販売手帳AI")
+    .replaceAll("TOPPAN汎用販売手帳AI", "TOPPAN百貨店　販売手帳AI");
 }
 
 function isEnabled(value: string | undefined) {

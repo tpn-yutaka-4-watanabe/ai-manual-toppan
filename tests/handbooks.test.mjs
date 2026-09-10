@@ -135,6 +135,31 @@ test("legacy Seibu Sogo typo is normalized even when environment configuration o
   assert.equal(app.auth.realm, "西武・そごう 販売基本ルールAI");
 });
 
+test("legacy TOPPAN generic display name is normalized even when environment configuration overrides the file", () => {
+  const registry = buildHandbookRegistry([
+    {
+      slug: "toppan-generic-sales-handbook",
+      envPrefix: "TOPPAN_GENERIC",
+      title: "TOPPAN百貨店　販売手帳AI",
+      assistantLabel: "TOPPAN百貨店　販売手帳AI",
+      initialMessage: "TOPPAN百貨店　販売手帳AIです。",
+    },
+  ], environment({
+    TOPPAN_GENERIC_BRAIN_PROJECT_ID: "toppan-project",
+    TOPPAN_GENERIC_AUTH_USERNAME: "toppan-user",
+    TOPPAN_GENERIC_AUTH_PASSWORD: "toppan-password",
+    TOPPAN_GENERIC_AUTH_REALM: "TOPPAN 汎用販売手帳AI",
+    TOPPAN_GENERIC_BRAIN_CONNECTION_NAME: "TOPPAN 汎用販売手帳AI Brain",
+  }));
+  const app = registry.get("toppan-generic-sales-handbook");
+
+  assert.equal(app.title, "TOPPAN百貨店　販売手帳AI");
+  assert.equal(app.assistantLabel, "TOPPAN百貨店　販売手帳AI");
+  assert.equal(app.initialMessage, "TOPPAN百貨店　販売手帳AIです。");
+  assert.equal(app.connectionName, "TOPPAN百貨店　販売手帳AI Brain");
+  assert.equal(app.auth.realm, "TOPPAN百貨店　販売手帳AI");
+});
+
 test("admin and handbook URLs enforce separate credentials", async () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const running = await listen(createApp(registry));

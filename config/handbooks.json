@@ -37,10 +37,10 @@
   {
     "slug": "toppan-generic-sales-handbook",
     "envPrefix": "TOPPAN_GENERIC",
-    "title": "TOPPAN 汎用販売手帳AI",
-    "assistantLabel": "TOPPAN 汎用販売手帳AI",
+    "title": "TOPPAN百貨店　販売手帳AI",
+    "assistantLabel": "TOPPAN百貨店　販売手帳AI",
     "inputPlaceholder": "販売手続・カード取扱い・エラー対応・併用可否について質問を入力してください",
-    "initialMessage": "TOPPAN 汎用販売手帳AIです。販売手続・クレジットカード取扱い・特典・併用可否・エラー対応・問合せ先について質問してください。",
+    "initialMessage": "TOPPAN百貨店　販売手帳AIです。販売手続・クレジットカード取扱い・特典・併用可否・エラー対応・問合せ先について質問してください。",
     "source": {
       "label": "TOPPAN 店頭決済対応ガイド",
       "pdfPath": "output/pdf/TOPPAN_店頭決済対応ガイド_オリジナル版.pdf",

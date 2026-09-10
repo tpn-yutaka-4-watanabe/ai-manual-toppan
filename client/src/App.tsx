@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { fetchAdminHandbookIndex, fetchHandbookConfig, streamChat } from "./api";
 import seibuSogoAssistantIcon from "./assets/seibu-sogo-ai-icon.jpg";
+import toppanDepartmentStoreAssistantIcon from "./assets/toppan-department-store-ai-icon.png";
 import type { AdminHandbookIndex, ChatMessage, PublicHandbookConfig, SourcePageTag } from "./types";
 
 const assistantIconBySlug: Record<string, string> = {
   "seibu-sogo-sales-basic-rules": seibuSogoAssistantIcon,
+  "toppan-generic-sales-handbook": toppanDepartmentStoreAssistantIcon,
 };
 
 function getSlug() {
