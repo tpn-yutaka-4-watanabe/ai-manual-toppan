@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import { fetchAdminHandbookIndex, fetchHandbookConfig, streamChat } from "./api";
+import seibuSogoAssistantIcon from "./assets/seibu-sogo-ai-icon.jpg";
 import type { AdminHandbookIndex, ChatMessage, PublicHandbookConfig, SourcePageTag } from "./types";
+
+const assistantIconBySlug: Record<string, string> = {
+  "seibu-sogo-sales-basic-rules": seibuSogoAssistantIcon,
+};
 
 function getSlug() {
   const match = window.location.pathname.match(/^\/(?:chats|apps)\/([a-z0-9]+(?:-[a-z0-9]+)*)\/?$/);
@@ -202,11 +207,13 @@ function MarkdownText({ text }: { text: string }) {
 function MessageItem({
   message,
   label,
+  assistantIconUrl,
   source,
   onOpenSource,
 }: {
   message: ChatMessage;
   label: string;
+  assistantIconUrl?: string;
   source?: PublicHandbookConfig["source"];
   onOpenSource: (reference: SourceReference) => void;
 }) {
@@ -218,7 +225,9 @@ function MessageItem({
     <div className="message-row assistant-row">
       <div className="assistant-label">{label}</div>
       <div className="assistant-speech-row">
-        <div className="assistant-avatar" aria-hidden="true">AI</div>
+        <div className={`assistant-avatar${assistantIconUrl ? " assistant-avatar-image" : ""}`} aria-hidden="true">
+          {assistantIconUrl ? <img src={assistantIconUrl} alt="" /> : "AI"}
+        </div>
         {message.isLoading ? (
           <div className="loading-bubble"><span /><span /><span /></div>
         ) : (
@@ -359,6 +368,7 @@ function HandbookPage({ slug }: { slug: string }) {
           <MessageItem
             message={message}
             label={config.assistantLabel}
+            assistantIconUrl={assistantIconBySlug[config.slug]}
             source={config.source}
             onOpenSource={setSelectedSource}
             key={message.id}

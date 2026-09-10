@@ -46,7 +46,7 @@
   },
   {
     "name": "SEIBU_SOGO_AUTH_PASSWORD",
-    "value": "<西部・そごうチャット用パスワードを入力>",
+    "value": "<西武・そごうチャット用パスワードを入力>",
     "slotSetting": false
   },
   {
@@ -71,7 +71,7 @@
   },
   {
     "name": "SEIBU_SOGO_BRAIN_CONNECTION_NAME",
-    "value": "西部・そごう 販売基本ルールAI Brain",
+    "value": "西武・そごう 販売基本ルールAI Brain",
     "slotSetting": false
   },
   {

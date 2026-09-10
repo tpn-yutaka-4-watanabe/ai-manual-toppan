@@ -2,10 +2,10 @@
   {
     "slug": "seibu-sogo-sales-basic-rules",
     "envPrefix": "SEIBU_SOGO",
-    "title": "西部・そごう 販売基本ルールAI",
-    "assistantLabel": "西部・そごう 販売基本ルールAI",
+    "title": "西武・そごう 販売基本ルールAI",
+    "assistantLabel": "西武・そごう 販売基本ルールAI",
     "inputPlaceholder": "販売基本ルールについて質問を入力してください",
-    "initialMessage": "西部・そごう 販売基本ルールAIです。確認したいことを入力してください。",
+    "initialMessage": "西武・そごう 販売基本ルールAIです。確認したいことを入力してください。",
     "source": {
       "label": "販売基本ルール 抜粋PDF",
       "pdfPath": "output/pdf/sales-basic-rules_pages-65-82_108-109.pdf",

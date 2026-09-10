@@ -41,7 +41,7 @@
   },
   {
     "name": "SEIBU_SOGO_BRAIN_CONNECTION_NAME",
-    "value": "西部・そごう 販売基本ルールAI Brain",
+    "value": "西武・そごう 販売基本ルールAI Brain",
     "slotSetting": false
   },
   {
@@ -56,7 +56,7 @@
   },
   {
     "name": "SEIBU_SOGO_AUTH_REALM",
-    "value": "西部・そごう 販売基本ルールAI",
+    "value": "西武・そごう 販売基本ルールAI",
     "slotSetting": false
   },
   {

@@ -18,7 +18,7 @@
 今回の初期チャット設定:
 
 ```text
-タイトル: 西部・そごう 販売基本ルールAI
+タイトル: 西武・そごう 販売基本ルールAI
 slug: seibu-sogo-sales-basic-rules
 envPrefix: SEIBU_SOGO
 ```
@@ -67,7 +67,7 @@ BRAIN_BASE_URL
 BRAIN_API_KEY
 ```
 
-西部・そごう 販売基本ルールAI 用:
+西武・そごう 販売基本ルールAI 用:
 
 ```text
 SEIBU_SOGO_BRAIN_PROJECT_ID
