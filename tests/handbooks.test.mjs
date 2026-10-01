@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import test from "node:test";
 import handbooksModule from "../server/dist/config/handbooks.js";
 import appModule from "../server/dist/app.js";
@@ -44,6 +46,10 @@ function environment(overrides = {}) {
 
 function basic(username, password) {
   return `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`;
+}
+
+function pageTagsIn(text) {
+  return [...new Set([...text.matchAll(/\[(page_[a-z0-9_]+)\]/g)].map((match) => match[1]))].sort();
 }
 
 async function listen(handler) {
@@ -148,6 +154,28 @@ test("public configuration never includes Brain or authentication secrets", () =
   assert.match(json, /"pdfUrl":"\/api\/handbooks\/alpha-handbook\/source\.pdf"/);
   assert.match(json, /"imageUrl":"\/api\/handbooks\/alpha-handbook\/source-pages\/page_1\.png"/);
   assert.match(json, /"tag":"page_1"/);
+});
+
+test("TOPPAN RAG and system prompt page tags all have configured preview images", () => {
+  const definitionsPath = resolve("config", "handbooks.json");
+  const productionDefinitions = JSON.parse(readFileSync(definitionsPath, "utf-8"));
+  const toppan = productionDefinitions.find((item) => item.slug === "toppan-generic-sales-handbook");
+  assert.ok(toppan?.source, "TOPPAN handbook source configuration is required");
+
+  const ragPath = resolve("output", "rag", "toppan-generic-sales-handbook_参照ページタグ付き.txt");
+  const promptPath = resolve("docs", "prompts", "toppan-generic-sales-handbook-system-prompt.md");
+  const ragTags = pageTagsIn(readFileSync(ragPath, "utf-8"));
+  const promptTags = pageTagsIn(readFileSync(promptPath, "utf-8"));
+  const configuredTags = toppan.source.pageTags.map((item) => item.tag).sort();
+
+  assert.deepEqual(configuredTags, ragTags, "RAG tags and preview configuration must stay aligned");
+  assert.deepEqual(promptTags, ragTags, "system prompt tags and RAG tags must stay aligned");
+  assert.equal(existsSync(resolve(toppan.source.pdfPath)), true, "configured source PDF must exist");
+
+  for (const tag of ragTags) {
+    const imagePath = resolve(toppan.source.imageDir, `${tag}.png`);
+    assert.equal(existsSync(imagePath), true, `preview image is missing for ${tag}`);
+  }
 });
 
 test("legacy Seibu Sogo typo is normalized even when environment configuration overrides the file", () => {
