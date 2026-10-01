@@ -96,6 +96,46 @@ test("admin authentication also fails closed when it is incomplete", () => {
   );
 });
 
+test("an incomplete secondary handbook credential fails closed", () => {
+  const env = environment({
+    ALPHA_AUTH_USERNAME_2: "alpha-second-user",
+  });
+  assert.throws(
+    () => buildHandbookRegistry(definitions, env),
+    /ALPHA_AUTH_PASSWORD_2/,
+  );
+});
+
+test("a secondary credential is added only to the configured handbook", async () => {
+  const registry = buildHandbookRegistry(definitions, environment({
+    ALPHA_AUTH_USERNAME_2: "alpha-second-user",
+    ALPHA_AUTH_PASSWORD_2: "alpha-second-password",
+  }));
+  const running = await listen(createApp(registry));
+
+  try {
+    assert.equal(registry.get("alpha-handbook").auth.credentials.length, 2);
+    assert.equal(registry.get("beta-handbook").auth.credentials.length, 1);
+
+    const alphaWithSecondUser = await fetch(`${running.baseUrl}/chats/alpha-handbook`, {
+      headers: { Authorization: basic("alpha-second-user", "alpha-second-password") },
+    });
+    assert.equal(alphaWithSecondUser.status, 200);
+
+    const betaWithAlphaSecondUser = await fetch(`${running.baseUrl}/chats/beta-handbook`, {
+      headers: { Authorization: basic("alpha-second-user", "alpha-second-password") },
+    });
+    assert.equal(betaWithAlphaSecondUser.status, 401);
+
+    const adminWithAlphaSecondUser = await fetch(`${running.baseUrl}/admin`, {
+      headers: { Authorization: basic("alpha-second-user", "alpha-second-password") },
+    });
+    assert.equal(adminWithAlphaSecondUser.status, 401);
+  } finally {
+    await running.close();
+  }
+});
+
 test("public configuration never includes Brain or authentication secrets", () => {
   const registry = buildHandbookRegistry(definitions, environment());
   const json = JSON.stringify(toPublicHandbookConfig(registry.get("alpha-handbook")));

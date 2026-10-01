@@ -80,6 +80,16 @@
     "slotSetting": false
   },
   {
+    "name": "TOPPAN_GENERIC_AUTH_USERNAME_2",
+    "value": "<second-chat-username>",
+    "slotSetting": false
+  },
+  {
+    "name": "TOPPAN_GENERIC_AUTH_PASSWORD_2",
+    "value": "<second-chat-strong-password>",
+    "slotSetting": false
+  },
+  {
     "name": "TOPPAN_GENERIC_AUTH_REALM",
     "value": "TOPPAN百貨店　販売手帳AI",
     "slotSetting": false

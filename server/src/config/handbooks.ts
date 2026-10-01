@@ -332,7 +332,29 @@ function getCredentials(prefix: string, env: NodeJS.ProcessEnv, errors: string[]
   const passwordName = `${prefix}_AUTH_PASSWORD`;
   const username = requiredEnv(env, usernameName, errors);
   const password = requiredEnv(env, passwordName, errors);
-  return username && password ? [{ username, password }] : [];
+  const credentials = username && password ? [{ username, password }] : [];
+
+  const secondaryUsernameName = `${prefix}_AUTH_USERNAME_2`;
+  const secondaryPasswordName = `${prefix}_AUTH_PASSWORD_2`;
+  const secondaryUsername = env[secondaryUsernameName]?.trim() || "";
+  const secondaryPassword = env[secondaryPasswordName]?.trim() || "";
+
+  if (secondaryUsername || secondaryPassword) {
+    if (!secondaryUsername) {
+      errors.push(secondaryUsernameName);
+    }
+    if (!secondaryPassword) {
+      errors.push(secondaryPasswordName);
+    }
+    if (secondaryUsername && secondaryPassword) {
+      credentials.push({
+        username: secondaryUsername,
+        password: secondaryPassword,
+      });
+    }
+  }
+
+  return credentials;
 }
 
 function buildAuthConfig(prefix: string, fallbackRealm: string, env: NodeJS.ProcessEnv, errors: string[]): AuthConfig {
